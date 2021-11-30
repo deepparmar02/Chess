@@ -4,6 +4,7 @@
 
 class Empty: public Piece {
     public:
+        Empty();
         PieceType getType() override;
         bool isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]) override;
         bool isMoved() override;
