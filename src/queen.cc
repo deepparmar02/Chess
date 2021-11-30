@@ -3,8 +3,16 @@
 Queen:Queen(PieceColour colour): Piece{colour}{}
 
 PieceType Queen:getType(){
-    return // PieceType(QUEEN)
+    return Queen;
 }
+
+PieceColour Queen:getColour(){
+    return colour;
+}
+
+bool Queen:isMoved(){
+    return false;
+} 
 
 bool Queen:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     if(board[endRow][endCol]->getColour() == colour){
