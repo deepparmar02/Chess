@@ -11,3 +11,5 @@ class King: public Piece {
         bool isMoved() override;
 
 }
+
+#endif

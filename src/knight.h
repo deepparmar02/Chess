@@ -11,3 +11,5 @@ class Knight: public Piece {
         bool isMoved() override;
 
 }
+
+#endif

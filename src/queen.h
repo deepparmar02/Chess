@@ -11,3 +11,5 @@ class Queen: public Piece {
         bool isMoved() override;
 
 }
+
+#endif

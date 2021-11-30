@@ -7,6 +7,12 @@ class Piece{
         Piece(PieceColour colourPiece);
         virtual ~Piece();
 
+        // Piece Colours
+        enum PieceColour {White, Black, NoColour};
+
+        // Piece Type
+        enum PieceType {Queen, Rook, King, Knight, Bishop, Pawn, Empty};
+
         virtual PieceType getType() = 0;
         virtual bool isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]) = 0;
         virtual PieceColour getColour() = 0;

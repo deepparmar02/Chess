@@ -11,3 +11,5 @@ class Rook: public Piece {
         bool isMoved() override;
 
 }
+
+#endif
