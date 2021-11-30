@@ -22,8 +22,8 @@ class Board {
         Board();
 
         /* BIG 5 - We will deep copy the pieces */
-        // ~Board(); // (deep)-Destroys the Board object
-        // Board(const Board &other); // Copy constructor
+        ~Board(); // (deep)-Destroys the Board object
+        Board(const Board &other); // Copy constructor
         // Board &operator=(const Board &other); // Copy assignment operator
         // Board(Board &&other); // Move constructor
         // Board &operator=(const Board &other); // Move assignment operator
