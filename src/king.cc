@@ -1,19 +1,19 @@
-#include "King.h"
+#include "king.h"
 
-King:King(PieceColour colour): Piece{colour}{}
+King::King(Piece::PieceColour colour): Piece{colour}{}
 
-PieceType King:getType(){
-    return King;
+Piece::PieceType King::getType(){
+    return Piece::King;
 }
 
-PieceColour King:getColour(){
+Piece::PieceColour King::getColour(){
     return colour;
 }
 
-bool King:isMoved(){
+bool King::isMoved(){
     return false;
 } 
 
-bool King:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
+bool King::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     return true;
 }

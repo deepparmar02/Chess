@@ -1,19 +1,19 @@
-#include "Pawn.h"
+#include "pawn.h"
 
-Pawn:Pawn(PieceColour colour): Piece{colour}{}
+Pawn::Pawn(Piece::PieceColour colour): Piece{colour}{}
 
-PieceType Pawn:getType(){
-    return Pawn;
+Piece::PieceType Pawn::getType(){
+    return PieceType::Pawn;
 }
 
-PieceColour Pawn:getColour(){
+Piece::PieceColour Pawn::getColour(){
     return colour;
 }
 
-bool Pawn:isMoved(){
+bool Pawn::isMoved(){
     return false;
 } 
 
-bool Pawn:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
+bool Pawn::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     return true;
 }

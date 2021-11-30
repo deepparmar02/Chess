@@ -1,19 +1,19 @@
-#include "Knight.h"
+#include "knight.h"
 
-Knight:Knight(PieceColour colour): Piece{colour}{}
+Knight::Knight(Piece::PieceColour colour): Piece{colour}{}
 
-PieceType Knight:getType(){
-    return Knight;
+Piece::PieceType Knight::getType(){
+    return PieceType::Knight;
 }
 
-PieceColour Knight:getColour(){
+Piece::PieceColour Knight::getColour(){
     return colour;
 }
 
-bool Knight:isMoved(){
+bool Knight::isMoved(){
     return false;
 } 
 
-bool Knight:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
+bool Knight::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     return true;
 }

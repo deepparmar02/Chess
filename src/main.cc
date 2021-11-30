@@ -2,9 +2,12 @@
 #include <vector>
 #include <string>
 #include <sstream>
+#include "board.h"
 using namespace std;
 
 int main() {
+    Board board{};
+    cout << board << endl;
     string command;
     while (cin >> command) {
         if (command == "game") {

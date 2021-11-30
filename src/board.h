@@ -1,12 +1,13 @@
 #ifndef BOARD_H
 #define BOARD_H
 #include <memory>
+#include "piece.h"
 class Move;
 class Piece;
 
 // Types of colours for chessboard. 
 // Note the British/Canadian spelling of Color, not American Color
-enum PieceColour {White, Black, NoColour};
+// enum PieceColour {White, Black, NoColour};
 
 // TODO: Add initialize function or something
 
@@ -21,11 +22,11 @@ class Board {
         Board();
 
         /* BIG 5 - We will deep copy the pieces */
-        ~Board(); // (deep)-Destroys the Board object
-        Board(const Board &other); // Copy constructor
-        Board &operator=(const Board &other); // Copy assignment operator
-        Board(Board &&other); // Move constructor
-        Board &operator=(const Board &other); // Move assignment operator
+        // ~Board(); // (deep)-Destroys the Board object
+        // Board(const Board &other); // Copy constructor
+        // Board &operator=(const Board &other); // Copy assignment operator
+        // Board(Board &&other); // Move constructor
+        // Board &operator=(const Board &other); // Move assignment operator
 
         /* ESSENTIAL BOARD FUNCTIONS, SO FAR */
 
@@ -60,12 +61,12 @@ class Board {
         void resetBoard();
 
         // winner returns the colour of the winner
-        PieceColour winner();
+        Piece::PieceColour winner();
 
         // TEMPORARY OUTPUT OPERATOR
         friend std::ostream &operator<<(std::ostream& out, const Board &board);
     private:
-        PieceColour whose_turn;
+        Piece::PieceColour whose_turn;
         std::unique_ptr<Piece> board[8][8];
 };
 

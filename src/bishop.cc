@@ -1,19 +1,19 @@
-#include "Bishop.h"
+#include "bishop.h"
 
-Bishop:Bishop(PieceColour colour): Piece{colour}{}
+Bishop::Bishop(Piece::PieceColour colour): Piece{colour}{}
 
-PieceType Bishop:getType(){
-    return Bishop;
+Piece::PieceType Bishop::getType(){
+    return PieceType::Bishop;
 }
 
-PieceColour Bishop:getColour(){
+Piece::PieceColour Bishop::getColour(){
     return colour;
 }
 
-bool Bishop:isMoved(){
+bool Bishop::isMoved(){
     return false;
 } 
 
-bool Bishop:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
+bool Bishop::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     return true;
 }

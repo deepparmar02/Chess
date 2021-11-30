@@ -1,19 +1,19 @@
-#include "Rook.h"
+#include "rook.h"
 
-Rook:Rook(PieceColour colour): Piece{colour}{}
+Rook::Rook(Piece::PieceColour colour): Piece{colour}{}
 
-PieceType Rook:getType(){
-    return Rook;
+Piece::PieceType Rook::getType(){
+    return PieceType::Rook;
 }
 
-PieceColour Rook:getColour(){
+Piece::PieceColour Rook::getColour(){
     return colour;
 }
 
-bool Rook:isMoved(){
+bool Rook::isMoved(){
     return false;
 } 
 
-bool Rook:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
+bool Rook::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     return true;
 }

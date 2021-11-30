@@ -12,7 +12,7 @@
 const int NUM_OF_SQUARES_PER_SIDE = 8;
 
 // NB: First index is the row number, second index is the column number
-Board::Board() : whose_turn{White} {
+Board::Board() : whose_turn{Piece::PieceColour::White} {
     // Empty squares setup
     for (int row = 2; row <= 5; ++row) {
         for (int col = 0; col < NUM_OF_SQUARES_PER_SIDE; ++col) {
@@ -22,19 +22,19 @@ Board::Board() : whose_turn{White} {
 
     // Pawn setup
     for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; ++i) {
-        board[1][i] = std::make_unique<Pawn>(Black);
-        board[6][i] = std::make_unique<Pawn>(White);
+        board[1][i] = std::make_unique<Pawn>(Piece::PieceColour::Black);
+        board[6][i] = std::make_unique<Pawn>(Piece::PieceColour::White);
     }
 
     // Remaining piece setup
     for (int j = 0; j <= 7; j += 7) {
-        PieceColour colour;
-        if (j == 7) { // j==7 means white row
-            colour = White;
-        } else if (j == 0) { // j==0 means black row
-            colour = Black;
+        Piece::PieceColour colour;
+        if (j == 7) { // j==7 means Piece::PieceColour::white row
+            colour = Piece::PieceColour::White;
+        } else if (j == 0) { // j==0 means Piece::PieceColour::black row
+            colour = Piece::PieceColour::Black;
         }
-        // Both white and black set up so they mirror each other.
+        // Both Piece::PieceColour::white and Piece::PieceColour::black set up so they mirror each other.
         board[j][0] = std::make_unique<Rook>(colour);
         board[j][1] = std::make_unique<Knight>(colour);
         board[j][2] = std::make_unique<Bishop>(colour);
@@ -46,25 +46,25 @@ Board::Board() : whose_turn{White} {
     }
 }
 
-Board::~Board() {
+// Board::~Board() {
 
-}
+// }
 
-Board::Board(const Board &other) {
+// Board::Board(const Board &other) {
 
-}
+// }
 
-Board & Board::operator=(const Board &other) {
+// Board & Board::operator=(const Board &other) {
 
-}
+// }
 
-Board::Board(Board &&other) {
+// Board::Board(Board &&other) {
 
-}
+// }
 
-Board & Board::operator=(const Board &other) {
+// Board & Board::operator=(const Board &other) {
 
-}
+// }
 
 Piece *Board::getPieceAt(int col, int row) const {
 
@@ -97,7 +97,7 @@ bool Board::inStalemate() {
 
 }
 
-PieceColour Board::winner() {
+Piece::PieceColour Board::winner() {
 
 }
 
@@ -110,11 +110,11 @@ std::ostream &operator<<(std::ostream& out, const Board &board) {
         out << "-";
     }
 
-    // start with bottom right square being the white square
+    // start with bottom right square being the Piece::PieceColour::white square
     for (int i = NUM_OF_SQUARES_PER_SIDE; i >= 0; i--) {
         out << "|";
         for (int j = NUM_OF_SQUARES_PER_SIDE; j >= 0; j--) {
-            // if even square, then it is white square
+            // if even square, then it is Piece::PieceColour::white square
             if (j % 2 == 0) {
                 out << "_";
             } else {
