@@ -63,6 +63,9 @@ class Board {
         // inStalemate checks if current player isn't in check 
         // but can't make any valid moves
         bool inStalemate();
+
+        // resetBoard goes back to default setup
+        void resetBoard();
     private:
         Colour whose_turn;
         std::unique_ptr<Piece> board[8][8];

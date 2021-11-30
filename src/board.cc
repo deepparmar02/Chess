@@ -1,5 +1,7 @@
 #include "board.h"
 
+// NB: Right now, I only added interface. There is no implementation yet.
+
 const int NUM_OF_SQUARES_PER_SIDE = 8;
 
 int charRankToInt(char c) {
@@ -34,3 +36,5 @@ bool Board::move(char startFile, int startRank, char endFile, int endFile, Piece
 bool Board::inCheck();
 bool Board::inCheckmate();
 bool Board::inStalemate();
+
+void Board::resetBoard();
