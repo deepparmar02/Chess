@@ -6,6 +6,7 @@
 #include "rook.h"
 #include "queen.h"
 #include "king.h"
+#include <iostream>
 
 const int NUM_OF_SQUARES_PER_SIDE = 8;
 
