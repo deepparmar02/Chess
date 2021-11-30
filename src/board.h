@@ -4,8 +4,6 @@
 class Move;
 class Piece;
 
-extern const int NUM_OF_SQUARES_PER_SIDE;
-
 // Types of colours for chessboard. 
 // Note the British/Canadian spelling of Color, not American Color
 enum PieceColour {White, Black, NoColour};
