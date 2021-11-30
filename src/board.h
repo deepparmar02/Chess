@@ -12,7 +12,7 @@ class Board {
     public:
         // Types of colours for chessboard. 
         // Note the British/Canadian spelling of Color, not American Color
-        enum Colour {White, Black, NoColour};
+        enum PieceColour {White, Black, NoColour};
 
         /**
          * Construct a new Board object.
@@ -67,7 +67,7 @@ class Board {
         // resetBoard goes back to default setup
         void resetBoard();
     private:
-        Colour whose_turn;
+        PieceColour whose_turn;
         std::unique_ptr<Piece> board[8][8];
 };
 
