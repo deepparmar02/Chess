@@ -6,14 +6,14 @@ class Piece;
 
 extern const int NUM_OF_SQUARES_PER_SIDE;
 
+// Types of colours for chessboard. 
+// Note the British/Canadian spelling of Color, not American Color
+enum PieceColour {White, Black, NoColour};
+
 // TODO: Add initialize function or something
 
 class Board {
     public:
-        // Types of colours for chessboard. 
-        // Note the British/Canadian spelling of Color, not American Color
-        enum PieceColour {White, Black, NoColour};
-
         /**
          * Construct a new Board object.
          * 
@@ -32,9 +32,7 @@ class Board {
         /* ESSENTIAL BOARD FUNCTIONS, SO FAR */
 
         /* Getters and Setters, sort of */
-        Piece getPieceAt(char col, int row) const;
-        Piece getPieceAt(int col, int row) const;
-        void setPieceAt(Piece &piece, char col, int row);
+        Piece *getPieceAt(int col, int row) const;
         void setPieceAt(Piece &piece, int col, int row);
         // cleaner alternative to getPieceAt
         // Piece operator() (char col, int row) const;
@@ -48,10 +46,6 @@ class Board {
          * @return false 
          */
         bool move(Move &given_move);
-        // File = column, Rank = row
-        bool move(char startFile, int startRank, char endFile, int endRank);
-        bool move(char startFile, int startRank, 
-                  char endFile, int endRank, Piece &promote_to);
 
         /* GAME STATE METHODS */
         // inCheck checks if current player is in check or not
@@ -66,6 +60,12 @@ class Board {
 
         // resetBoard goes back to default setup
         void resetBoard();
+
+        // winner returns the colour of the winner
+        PieceColour winner();
+
+        // TEMPORARY OUTPUT OPERATOR
+        friend std::ostream &operator<<(std::ostream& out, const Board &board);
     private:
         PieceColour whose_turn;
         std::unique_ptr<Piece> board[8][8];
