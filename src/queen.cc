@@ -1,20 +1,20 @@
 #include "queen.h"
 
-Queen:Queen(PieceColour colour): Piece{colour}{}
+Queen::Queen(PieceColour colour): Piece{colour}{}
 
-PieceType Queen:getType(){
-    return Queen;
+Piece::PieceType Queen::getType(){
+    return PieceType::Queen;
 }
 
-PieceColour Queen:getColour(){
+Piece::PieceColour Queen::getColour(){
     return colour;
 }
 
-bool Queen:isMoved(){
+bool Queen::isMoved(){
     return false;
 } 
 
-bool Queen:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
+bool Queen::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
     if(board[endRow][endCol]->getColour() == colour){
         return false;
     }
@@ -39,7 +39,7 @@ bool Queen:isValidMove(int startRow, int startCol, int endRow, int endCol, Piece
         int colDir = (endCol - startCol > 0) ? 1 : -1;
         int j = startCol + colDir;
         for(int i = startRow + rowDir; i != endRow; i += rowDir){
-            if(board[i][j]->getType != Empty){
+            if(board[i][j]->getType() != Empty){
                 return false;
             }
             j += colDir;

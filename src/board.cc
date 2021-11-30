@@ -1,5 +1,6 @@
 #include "board.h"
 #include "piece.h"
+#include "empty.h"
 #include "pawn.h"
 #include "knight.h"
 #include "bishop.h"
