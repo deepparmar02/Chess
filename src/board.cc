@@ -46,37 +46,60 @@ Board::Board() : whose_turn{Piece::PieceColour::White} {
     }
 }
 
-// Board::~Board() {
+Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
-// }
+std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
+    std::unique_ptr<Piece> newPiece;
+    if (piece.getType() == Piece::PieceType::King) {
+        newPiece = std::make_unique<King>(piece);
+    } else if (piece.getType() == Piece::PieceType::Queen) {
+        newPiece = std::make_unique<Queen>(piece);
+    } else if (piece.getType() == Piece::PieceType::Rook) {
+        newPiece = std::make_unique<Rook>(piece);
+    } else if (piece.getType() == Piece::PieceType::Knight) {
+        newPiece = std::make_unique<Knight>(piece);
+    } else if (piece.getType() == Piece::PieceType::Pawn) {
+        newPiece = std::make_unique<Pawn>(piece);
+    } else if (piece.getType() == Piece::PieceType::Empty) {
+        newPiece = std::make_unique<Empty>(piece);
+    }
+    return newPiece;
+}
 
-// Board::Board(const Board &other) {
+Board::Board(const Board &other) {
+    for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
+        for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
+            board[r][c] = createBasedOnPieceType(*other.board[r][c]);
+        }
+    }
+}
+/*
+Board & Board::operator=(const Board &other) {
+    if (this != &other) {
 
-// }
+    }
+}
 
-// Board & Board::operator=(const Board &other) {
+Board::Board(Board &&other) {
+    
+}
 
-// }
+Board & Board::operator=(const Board &other) {
 
-// Board::Board(Board &&other) {
-
-// }
-
-// Board & Board::operator=(const Board &other) {
-
-// }
-
+}
+*/
 Piece *Board::getPieceAt(int col, int row) const {
-
+    return board[row][col].get();
 }
 
 void Board::setPieceAt(Piece &piece, int col, int row) {
-
+    // auto newPiece = createBasedOnPieceType(piece);
+    // std::swap(newPiece, board[row][col]);
 }
 // cleaner alternative to getPieceAt
 /*
-Piece Board::operator() (char col, int row) const {
-
+Piece *Board::operator() (char col, int row) const {
+    return getPieceAt(col, row);
 } */
 
 /* MOVE FUNCTION */
