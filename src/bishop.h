@@ -2,7 +2,7 @@
 #define __BISHOP_H__
 #include "piece.h"
 
-class Knight: public Piece {
+class Bishop: public Piece {
     public:
         Bishop(PieceColour colour);
         PieceType getType() override;
@@ -11,3 +11,5 @@ class Knight: public Piece {
         bool isMoved() override;
 
 }
+
+#endif
