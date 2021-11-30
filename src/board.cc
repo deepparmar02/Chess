@@ -8,6 +8,7 @@
 #include "queen.h"
 #include "king.h"
 #include <iostream>
+using namespace std;
 
 const int NUM_OF_SQUARES_PER_SIDE = 8;
 
@@ -106,25 +107,25 @@ void Board::resetBoard() {
 }
 
 std::ostream &operator<<(std::ostream& out, const Board &board) {
-    for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; ++j) {
-        out << "-";
-    }
 
     // start with bottom right square being the Piece::PieceColour::white square
-    for (int i = NUM_OF_SQUARES_PER_SIDE; i >= 0; i--) {
-        out << "|";
-        for (int j = NUM_OF_SQUARES_PER_SIDE; j >= 0; j--) {
+    for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; i++) {
+        int startWithWhite = 0;
+        if (i % 2 != 0) startWithWhite = 1; 
+        out << NUM_OF_SQUARES_PER_SIDE - i << " ";
+        for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
             // if even square, then it is Piece::PieceColour::white square
-            if (j % 2 == 0) {
+            if (j % 2 == startWithWhite) {
                 out << "_";
             } else {
                 out << " ";
             }
         }
-        out << "|";
+        out << endl;
     }
 
-    for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; ++j) out << "-";
+    out << endl;
+    out << "  abcdefgh" << endl;
 
     return out;
 }
