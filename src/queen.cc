@@ -14,14 +14,14 @@ bool Queen::isMoved(){
     return false;
 } 
 
-bool Queen::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
-    if(board[endRow][endCol]->getColour() == colour){
+bool Queen::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
+    if(board.getPieceAt(endCol,endRow)->getColour() == colour){
         return false;
     }
     if(startRow == endRow){ // Checks if there is a piece between startCol and endCol (horizontally)
         int moveDir = (endCol - startCol > 0) ? 1 : -1; // 1 is right 
         for(int i = startCol + moveDir; i != endCol; i += moveDir){
-            if(board[startRow][i]->getType() != Empty){
+            if(board.getPieceAt(i, startRow)->getType() != Empty){
                 return false;
             }
         }
@@ -29,7 +29,7 @@ bool Queen::isValidMove(int startRow, int startCol, int endRow, int endCol, Piec
     }else if(startCol == endCol){ // Checks if there is a piece between startRow and endRow (vertically)
         int moveDir = (endRow - startRow > 0) ? 1 : -1; // 1 is right 
         for(int i = startRow + moveDir; i != endRow; i += moveDir){
-            if(board[i][startCol]->getType() != Empty){
+            if(board.getPieceAt(startCol, i)->getType() != Empty){
                 return false;
             }
         }
@@ -39,7 +39,7 @@ bool Queen::isValidMove(int startRow, int startCol, int endRow, int endCol, Piec
         int colDir = (endCol - startCol > 0) ? 1 : -1;
         int j = startCol + colDir;
         for(int i = startRow + rowDir; i != endRow; i += rowDir){
-            if(board[i][j]->getType() != Empty){
+            if(board.getPieceAt(j, i)->getType() != Empty){
                 return false;
             }
             j += colDir;

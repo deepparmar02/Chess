@@ -16,34 +16,34 @@ bool Pawn::isMoved(){
     return hasDouble;
 } 
 
-bool Pawn::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
-    if(board[endRow][endCol]->getType() == Empty){
+bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
+    if(board.getPieceAt(endCol, endRow)->getType() == Empty){
         if(endCol == startCol){
             if(colour == White){
                 if(endRow == startRow + 1){
                     hasDouble = false;
                     return true;
-                }else if(startRow == 1 && (endRow == startRow + 2) && (board[endRow - 1][endCol] == Empty)){
+                }else if(startRow == 2 && (endRow == startRow + 2) && (board.getPieceAt(endCol, endRow - 1)->getType == Empty)){
                     hasDouble = true;
                     return true;
                 }
             }else if(endRow == startRow - 1){
                 hasDouble = false;
                 return true;
-            }else if(startRow == 6 && (endRow == startRow - 2) && (board[endRow + 1][endCol] == Empty)){
+            }else if(startRow == 7 && (endRow == startRow - 2) && (board.getPieceAt(endCol, endRow + 1)->getType() == Empty)){
                 hasDouble = true;
                 return true;
             }
         }else if((endCol == startCol + 1) || (endCol == startCol - 1)){ // en passant
             if(colour == White){
-                if(board[startRow][endCol]->getType() == Pawn && board[startRow][endCol]->getColour() != White && board[startRow][endCol]->isMoved() == true){ // adjacent pawn is of different colour has moved double
+                if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() != White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
                     if(endRow = startRow + 1){
                         hasDouble = false;
                         return true;
                     }
                 }
             }else{
-                if(board[startRow][endCol]->getType() == Pawn && board[startRow][endCol]->getColour() == White && board[startRow][endCol]->isMoved() == true){ // adjacent pawn is of different colour has moved double
+                if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() == White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
                     if(endRow = startRow - 1){
                         hasDouble = false;
                         return true;
@@ -51,7 +51,7 @@ bool Pawn::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece
                 }
             }
         }
-    }else if(board[endRow][endCol]->getColour() != colour){
+    }else if(board.getPieceAt(endCol, endRow)->getColour() != colour){
         if((endCol == startCol + 1) || (endCol == startCol - 1)){
             if(colour == White){
                 if(endRow == startRow + 1){
