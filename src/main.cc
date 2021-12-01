@@ -33,12 +33,9 @@ int main() {
             // update scoreboard
         }
         else if (command == "move") {
-            char row, col;
-            int startRow, endRow, startCol, endCol;
-            cin >> row >> startCol >> col >> endCol;
-
-            startRow = row - 'a';
-            endRow = col - 'a';
+            char startCol, endCol;
+            int startRow, endRow;
+            cin >> startCol >> startRow >> endCol >> endRow;
 
             cout << startRow << "-" << startCol << endl;
             cout << endRow << "-" << endCol << endl;
@@ -51,18 +48,14 @@ int main() {
             string setupCmd;
             while (cin >> setupCmd) {
                 if (setupCmd == "+") {
-                    char piece, charRow;
-                    int row, col;
-                    cin >> piece >> charRow >> col;
-
-                    row = charRow - 'a';
+                    char piece, col;
+                    int row;
+                    cin >> piece >> col >> row;
                 }
                 else if (setupCmd == "-") {
-                    char charRow;
-                    int row, col;
-                    cin >> charRow >> col;
-
-                    row = charRow - 'a';
+                    char col;
+                    int row;
+                    cin >> col >> row;
                 }
                 else if (setupCmd == "done") {
                     // check for board validity before quitting
