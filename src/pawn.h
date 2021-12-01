@@ -8,7 +8,10 @@ class Pawn: public Piece {
         PieceType getType() override;
         bool isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]) override;
         PieceColour getColour() override;
-        bool isMoved() override;
+        bool isMoved() override; // returns if pawn has moved double or not
+    
+    private:
+        bool hasDouble;
 
 };
 

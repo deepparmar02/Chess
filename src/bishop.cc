@@ -2,11 +2,11 @@
 
 Bishop::Bishop(Piece::PieceColour colour): Piece{colour}{}
 
-Piece::PieceType Bishop::getType(){
+Piece::PieceType Bishop::getType() {
     return PieceType::Bishop;
 }
 
-Piece::PieceColour Bishop::getColour(){
+Piece::PieceColour Bishop::getColour() {
     return colour;
 }
 
