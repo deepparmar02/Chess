@@ -41,9 +41,13 @@ Piece *Board::getPieceAt(char file, int rank) const {
     return board[ridx][cidx].get();
 }
 
-// The internal board setup is that white pieces are on the left, black on the right.
-// a1 is [0][0], etc. up tp h8 which is [7][7]
-Board::Board() : whose_turn{Piece::PieceColour::White} {
+// cleaner alternative to getPieceAt
+Piece *Board::operator() (char col, int row) const {
+    return getPieceAt(col, row);
+}
+
+void Board::defaultSetup() {
+    whose_turn = Piece::PieceColour::White;
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
         board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
@@ -78,9 +82,48 @@ Board::Board() : whose_turn{Piece::PieceColour::White} {
     }
 }
 
+// The internal board setup is that white pieces are on the left, black on the right.
+// a1 is [0][0], etc. up tp h8 which is [7][7]
+Board::Board() : whose_turn{Piece::PieceColour::White} {
+    // // pawn setup
+    // for (char c = 'a'; c <= 'h'; ++c) {
+    //     board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
+    //     board[fileToRow(c)][rankToCol(7)] = std::make_unique<Pawn>(Piece::PieceColour::Black);
+    // }
+
+    // // empty setup
+    // for (char d = 'a'; d <= 'h'; ++d) {
+    //     for (char r = 3; r <= 6; ++r) {
+    //         int ridx = fileToRow(d);
+    //         int cidx = rankToCol(r);
+    //         board[ridx][cidx] = std::make_unique<Empty>();
+    //     }
+    // }
+
+    // // rest of pieces setup
+    // for (int i = 1; i <= 8; i += 7) {
+    //     Piece::PieceColour colour;
+    //     if (1 == i) {
+    //         colour = Piece::PieceColour::White;
+    //     } else {
+    //         colour = Piece::PieceColour::Black;
+    //     }
+    //     board[fileToRow('a')][rankToCol(i)] = std::make_unique<Rook>(colour);
+    //     board[fileToRow('b')][rankToCol(i)] = std::make_unique<Knight>(colour);
+    //     board[fileToRow('c')][rankToCol(i)] = std::make_unique<Bishop>(colour);
+    //     board[fileToRow('d')][rankToCol(i)] = std::make_unique<Queen>(colour);
+    //     board[fileToRow('e')][rankToCol(i)] = std::make_unique<King>(colour);
+    //     board[fileToRow('f')][rankToCol(i)] = std::make_unique<Bishop>(colour);
+    //     board[fileToRow('g')][rankToCol(i)] = std::make_unique<Knight>(colour);
+    //     board[fileToRow('h')][rankToCol(i)] = std::make_unique<Rook>(colour);
+    // }
+    defaultSetup();
+}
+
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
 // TODO: Tell Vansh about explicit and make copy constructors
+// Wait for him to implement copy constructors
 std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
     std::unique_ptr<Piece> newPiece;
     // if (piece.getType() == Piece::PieceType::King) {
@@ -141,15 +184,11 @@ Board & Board::operator=(Board &&other) {
 }
 
 void Board::setPieceAt(char file, int rank, Piece &piece) {
-    return;
+    auto newPiece = createBasedOnPieceType(piece);
+    std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
 }
-// cleaner alternative to getPieceAt
-/*
-Piece *Board::operator() (char col, int row) const {
-    return getPieceAt(col, row);
-} */
 
-/* GAME STATE METHODS */
+/* GAME STATE METHODS - TODO: Do it later, when I finish easy ones. */
 bool Board::inCheck() {
     return false;
 }
@@ -210,7 +249,7 @@ Piece::PieceColour Board::winner() {
 }
 
 void Board::resetBoard() {
-    return;
+    defaultSetup();
 }
 
 char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {
