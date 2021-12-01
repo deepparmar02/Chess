@@ -31,10 +31,10 @@ class Board {
         /* ESSENTIAL BOARD FUNCTIONS, SO FAR */
 
         /* Getters and Setters, sort of */
-        Piece *getPieceAt(int row, int col) const;
-        void setPieceAt(Piece &piece, int row, int col);
+        Piece *getPieceAt(char file, int rank) const;
         // cleaner alternative to getPieceAt
-        // Piece operator() (char col, int row) const;
+        // Piece operator() (char file, int rank) const;
+        void setPieceAt(char file, int rank, Piece &piece);
 
         /**
          * move takes in the start and end squares, returns if it is
@@ -45,7 +45,7 @@ class Board {
          * @return false 
          */
         // bool move(Move &given_move);
-        bool move(int startRow, int startCol, int endRow, int endCol);
+        bool move(char start_file, int start_rank, char end_file, int end_rank);
 
         /* GAME STATE METHODS */
         // inCheck checks if current player is in check or not

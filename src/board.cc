@@ -8,47 +8,79 @@
 #include "queen.h"
 #include "king.h"
 #include <iostream>
+#include <utility>
 using namespace std;
 
 const int NUM_OF_SQUARES_PER_SIDE = 8;
 
-// NB: First index is the row number, second index is the column number
+int fileToRow(char c) {
+    if ('a' <= c && c <= 'h') {
+        return c - 'a';
+    } else {
+        throw;
+    }
+}
+
+int rankToCol(int i) {
+    if (1 <= i && i <= 8) {
+        return i - 1;
+    } else {
+        throw;
+    }
+}
+
+std::pair<int, int> getIndexes(char file, int rank) {
+    int rowidx = fileToRow(file);
+    int colidx = rankToCol(rank);
+    return std::make_pair(rowidx, colidx);
+}
+
+Piece *Board::getPieceAt(char file, int rank) const {
+    int ridx = fileToRow(file);
+    int cidx = rankToCol(rank);
+    return board[ridx][cidx].get();
+}
+
+// The internal board setup is that white pieces are on the left, black on the right.
+// a1 is [0][0], etc. up tp h8 which is [7][7]
 Board::Board() : whose_turn{Piece::PieceColour::White} {
-    // Empty squares setup
-    for (int row = 2; row <= 5; ++row) {
-        for (int col = 0; col < NUM_OF_SQUARES_PER_SIDE; ++col) {
-            board[row][col] = std::make_unique<Empty>();
+    // pawn setup
+    for (char c = 'a'; c <= 'h'; ++c) {
+        board[fileToRow('a')][rankToCol(1)] = std::make_unique<Pawn>(Piece::PieceColour::White);
+        board[fileToRow('a')][rankToCol(1)] = std::make_unique<Pawn>(Piece::PieceColour::White);
+    }
+
+    // empty setup
+    for (char d = 'a'; d <= 'h'; ++d) {
+        for (char r = 3; r <= 6; ++r) {
+            int ridx = fileToRow(d);
+            int cidx = rankToCol(r);
+            board[ridx][cidx] = std::make_unique<Empty>();
         }
     }
 
-    // Pawn setup
-    for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; ++i) {
-        board[1][i] = std::make_unique<Pawn>(Piece::PieceColour::Black);
-        board[6][i] = std::make_unique<Pawn>(Piece::PieceColour::White);
-    }
-
-    // Remaining piece setup
-    for (int j = 0; j <= 7; j += 7) {
+    // rest of pieces setup
+    for (int i = 1; i <= 8; i += 7) {
         Piece::PieceColour colour;
-        if (j == 7) { // j==7 means Piece::PieceColour::white row
+        if (1 == i) {
             colour = Piece::PieceColour::White;
-        } else if (j == 0) { // j==0 means Piece::PieceColour::black row
+        } else {
             colour = Piece::PieceColour::Black;
         }
-        // Both Piece::PieceColour::white and Piece::PieceColour::black set up so they mirror each other.
-        board[j][0] = std::make_unique<Rook>(colour);
-        board[j][1] = std::make_unique<Knight>(colour);
-        board[j][2] = std::make_unique<Bishop>(colour);
-        board[j][3] = std::make_unique<Queen>(colour);
-        board[j][4] = std::make_unique<King>(colour);
-        board[j][5] = std::make_unique<Bishop>(colour);
-        board[j][6] = std::make_unique<Knight>(colour);
-        board[j][7] = std::make_unique<Rook>(colour);
+        board[fileToRow('a')][rankToCol(i)] = std::make_unique<Rook>(colour);
+        board[fileToRow('b')][rankToCol(i)] = std::make_unique<Knight>(colour);
+        board[fileToRow('c')][rankToCol(i)] = std::make_unique<Bishop>(colour);
+        board[fileToRow('d')][rankToCol(i)] = std::make_unique<Queen>(colour);
+        board[fileToRow('e')][rankToCol(i)] = std::make_unique<King>(colour);
+        board[fileToRow('f')][rankToCol(i)] = std::make_unique<Bishop>(colour);
+        board[fileToRow('g')][rankToCol(i)] = std::make_unique<Knight>(colour);
+        board[fileToRow('h')][rankToCol(i)] = std::make_unique<Rook>(colour);
     }
 }
 
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
+// TODO: Tell Vansh about explicit and make copy constructors
 std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
     std::unique_ptr<Piece> newPiece;
     // if (piece.getType() == Piece::PieceType::King) {
@@ -108,13 +140,8 @@ Board & Board::operator=(Board &&other) {
     return *this;
 }
 
-Piece *Board::getPieceAt(int row, int col) const {
-    return board[row][col].get();
-}
-
-void Board::setPieceAt(Piece &piece, int col, int row) {
-    auto newPiece = createBasedOnPieceType(piece);
-    std::swap(newPiece, board[row][col]);
+void Board::setPieceAt(char file, int rank, Piece &piece) {
+    return;
 }
 // cleaner alternative to getPieceAt
 /*
@@ -123,19 +150,13 @@ Piece *Board::operator() (char col, int row) const {
 } */
 
 /* MOVE FUNCTION */
-bool Board::move(int startRow, int startCol, int endRow, int endCol) {
-    bool moveable = true/*board[startRow][startCol]->isValidMove(startRow, startCol, endRow, endCol, *this)*/;
-    if (moveable) {
-        std::swap(board[startRow][startCol], board[endRow][endCol]);
-        if (inCheck()) {
-            std::swap(board[startRow][startCol], board[endRow][endCol]);
-            return false;
-        } else {
-            return true;
-        }
-    } else {
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+    /*
+    if (isCheckMate()) {
         return false;
     }
+    if (getPieceAt(start_file, start_rank)->getColour() == ) */
+    return false;
 }
 
 // bool Board::move(Move &given_move) {
@@ -164,7 +185,7 @@ Piece::PieceColour Board::winner() {
 }
 
 void Board::resetBoard() {
-
+    return;
 }
 
 char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {
@@ -197,7 +218,7 @@ std::ostream &operator<<(std::ostream& out, const Board & board) {
         if (i % 2 != 0) startWithWhite = 1; 
         out << NUM_OF_SQUARES_PER_SIDE - i << " ";
         for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
-            Piece* piece = board.getPieceAt(j, i);
+            Piece* piece = board.getPieceAt(i, j); // TODO: Tell Deep I swapped row and column just to match conventions
             if (piece->getType() != Piece::Empty) {
                 out << initializeBoardPiece(piece->getType(), piece->getColour());
             } else {
