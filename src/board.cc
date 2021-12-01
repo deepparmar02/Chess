@@ -106,19 +106,22 @@ void Board::resetBoard() {
 
 }
 
-std::ostream &operator<<(std::ostream& out, const Board &board) {
-
-    // start with bottom right square being the Piece::PieceColour::white square
+std::ostream &operator<<(std::ostream& out, const Board & board) {
+    // start with top right square being the Piece::PieceColour::white square
     for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; i++) {
         int startWithWhite = 0;
         if (i % 2 != 0) startWithWhite = 1; 
         out << NUM_OF_SQUARES_PER_SIDE - i << " ";
         for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
-            // if even square, then it is Piece::PieceColour::white square
-            if (j % 2 == startWithWhite) {
-                out << "_";
+            Piece* piece = board.getPieceAt(j, i);
+            if (piece->getType() != Piece::Empty) {
+                initializeBoardPiece(piece->getType(), piece->getColour());
             } else {
-                out << " ";
+                if (j % 2 == startWithWhite) {
+                    out << "_";
+                } else {
+                    out << " ";
+                }
             }
         }
         out << endl;
@@ -128,4 +131,27 @@ std::ostream &operator<<(std::ostream& out, const Board &board) {
     out << "  abcdefgh" << endl;
 
     return out;
+}
+
+char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {
+    char piece;
+    if (pieceType == Piece::King) {
+        piece = 'K';
+    } else if (pieceType == Piece::Queen) {
+        piece = 'Q';
+    } else if (pieceType == Piece::Rook) {
+        piece = 'R';
+    } else if (pieceType == Piece::Bishop) {
+        piece = 'B';
+    } else if (pieceType == Piece::Knight) {
+        piece = 'N';
+    } else {
+        piece = 'P';
+    }
+
+    // if Black piece, then change to lower case
+    if (colour == Piece::Black) {
+        tolower(piece);
+    }
+    return piece;
 }
