@@ -149,24 +149,6 @@ Piece *Board::operator() (char col, int row) const {
     return getPieceAt(col, row);
 } */
 
-/* MOVE FUNCTION */
-bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
-    /*
-    if (isCheckMate()) {
-        return false;
-    }
-    if (getPieceAt(start_file, start_rank)->getColour() == ) */
-    return false;
-}
-
-// bool Board::move(Move &given_move) {
-//     int startRow = given_move.startRow;
-//     int startCol = given_move.startCol;
-//     int endRow = given_move.endRow;
-//     int endCol = given_move.endCol;
-//     return move(startRow, startCol, endRow, endCol);
-// }
-
 /* GAME STATE METHODS */
 bool Board::inCheck() {
     return false;
@@ -179,6 +161,40 @@ bool Board::inCheckmate() {
 bool Board::inStalemate() {
     return false;
 }
+
+/* MOVE FUNCTION */
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+    if (inCheckmate()) {
+        return false;
+    }
+    Piece *piece = getPieceAt(start_file, start_rank);
+    if (piece->getColour() != whose_turn) {
+        return false;
+    }
+    if (piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
+        int sridx = fileToRow(start_file);
+        int scidx = rankToCol(start_rank);
+        int eridx = rankToCol(end_rank);
+        int ecidx = rankToCol(end_rank);
+        std::swap(board[sridx][scidx], board[eridx][ecidx]);
+        if (inCheck()) {
+            std::swap(board[sridx][scidx], board[eridx][ecidx]);
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
+
+// bool Board::move(Move &given_move) {
+//     int startRow = given_move.startRow;
+//     int startCol = given_move.startCol;
+//     int endRow = given_move.endRow;
+//     int endCol = given_move.endCol;
+//     return move(startRow, startCol, endRow, endCol);
+// }
 
 Piece::PieceColour Board::winner() {
     return Piece::PieceColour::NoColour;
