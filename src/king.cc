@@ -1,4 +1,5 @@
 #include "king.h"
+#include "board.h"
 
 King::King(Piece::PieceColour colour): Piece{colour}{}
 
@@ -14,8 +15,8 @@ bool King::isMoved(){
     return false;
 } 
 
-bool King::isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]){
-    if(board[endRow][endCol]->getColour() == colour){
+bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board){
+    if(board.getPieceAt(endCol, endRow)->getColour() == colour){
         return false;
     }
     int changeRow = endRow - startRow;

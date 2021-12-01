@@ -6,7 +6,7 @@ class King: public Piece {
     public:
         King(PieceColour colour);
         PieceType getType() override;
-        bool isValidMove(int startRow, int startCol, int endRow, int endCol, Piece* board[8][8]) override;
+        bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board) override;
         PieceColour getColour() override;
         bool isMoved() override;
 
