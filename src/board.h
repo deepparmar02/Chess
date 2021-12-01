@@ -32,8 +32,8 @@ class Board {
 
         /* Getters and Setters, sort of */
         Piece *getPieceAt(char file, int rank) const;
-        // cleaner alternative to getPieceAt
-        // Piece operator() (char file, int rank) const;
+        // cleaner client alternative to getPieceAt
+        Piece *operator() (char file, int rank) const;
         void setPieceAt(char file, int rank, Piece &piece);
 
         /**
@@ -69,6 +69,15 @@ class Board {
     private:
         Piece::PieceColour whose_turn;
         std::unique_ptr<Piece> board[8][8];
+
+        // FUTURE FIELDS THAT MIGHT COME USEFUL
+        std::pair<int, int> white_king;
+        std::pair<int, int> black_king;
+        bool white_castle_kingside;
+        bool white_castle_queenside;
+        bool black_castle_kingside;
+        bool black_castle_queenside;
+        std::pair<int, int>en_passant_square;
 };
 
 #endif

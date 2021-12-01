@@ -41,6 +41,11 @@ Piece *Board::getPieceAt(char file, int rank) const {
     return board[ridx][cidx].get();
 }
 
+// cleaner alternative to getPieceAt
+Piece *Board::operator() (char col, int row) const {
+    return getPieceAt(col, row);
+}
+
 // The internal board setup is that white pieces are on the left, black on the right.
 // a1 is [0][0], etc. up tp h8 which is [7][7]
 Board::Board() : whose_turn{Piece::PieceColour::White} {
@@ -81,6 +86,7 @@ Board::Board() : whose_turn{Piece::PieceColour::White} {
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
 // TODO: Tell Vansh about explicit and make copy constructors
+// Wait for him to implement copy constructors
 std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
     std::unique_ptr<Piece> newPiece;
     // if (piece.getType() == Piece::PieceType::King) {
@@ -141,15 +147,11 @@ Board & Board::operator=(Board &&other) {
 }
 
 void Board::setPieceAt(char file, int rank, Piece &piece) {
-    return;
+    auto newPiece = createBasedOnPieceType(piece);
+    std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
 }
-// cleaner alternative to getPieceAt
-/*
-Piece *Board::operator() (char col, int row) const {
-    return getPieceAt(col, row);
-} */
 
-/* GAME STATE METHODS */
+/* GAME STATE METHODS - TODO: Do it later, when I finish easy ones. */
 bool Board::inCheck() {
     return false;
 }
