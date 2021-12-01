@@ -51,19 +51,19 @@ Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
 std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
     std::unique_ptr<Piece> newPiece;
-    if (piece.getType() == Piece::PieceType::King) {
-        newPiece = std::make_unique<King>(piece);
-    } else if (piece.getType() == Piece::PieceType::Queen) {
-        newPiece = std::make_unique<Queen>(piece);
-    } else if (piece.getType() == Piece::PieceType::Rook) {
-        newPiece = std::make_unique<Rook>(piece);
-    } else if (piece.getType() == Piece::PieceType::Knight) {
-        newPiece = std::make_unique<Knight>(piece);
-    } else if (piece.getType() == Piece::PieceType::Pawn) {
-        newPiece = std::make_unique<Pawn>(piece);
-    } else if (piece.getType() == Piece::PieceType::Empty) {
-        newPiece = std::make_unique<Empty>(piece);
-    }
+    // if (piece.getType() == Piece::PieceType::King) {
+    //     newPiece = std::make_unique<King>(piece);
+    // } else if (piece.getType() == Piece::PieceType::Queen) {
+    //     newPiece = std::make_unique<Queen>(piece);
+    // } else if (piece.getType() == Piece::PieceType::Rook) {
+    //     newPiece = std::make_unique<Rook>(piece);
+    // } else if (piece.getType() == Piece::PieceType::Knight) {
+    //     newPiece = std::make_unique<Knight>(piece);
+    // } else if (piece.getType() == Piece::PieceType::Pawn) {
+    //     newPiece = std::make_unique<Pawn>(piece);
+    // } else if (piece.getType() == Piece::PieceType::Empty) {
+    //     newPiece = std::make_unique<Empty>(piece);
+    // }
     return newPiece;
 }
 
@@ -129,33 +129,6 @@ void Board::resetBoard() {
 
 }
 
-std::ostream &operator<<(std::ostream& out, const Board & board) {
-    // start with top right square being the Piece::PieceColour::white square
-    for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; i++) {
-        int startWithWhite = 0;
-        if (i % 2 != 0) startWithWhite = 1; 
-        out << NUM_OF_SQUARES_PER_SIDE - i << " ";
-        for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
-            Piece* piece = board.getPieceAt(j, i);
-            if (piece->getType() != Piece::Empty) {
-                initializeBoardPiece(piece->getType(), piece->getColour());
-            } else {
-                if (j % 2 == startWithWhite) {
-                    out << "_";
-                } else {
-                    out << " ";
-                }
-            }
-        }
-        out << endl;
-    }
-
-    out << endl;
-    out << "  abcdefgh" << endl;
-
-    return out;
-}
-
 char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {
     char piece;
     if (pieceType == Piece::King) {
@@ -174,7 +147,35 @@ char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour)
 
     // if Black piece, then change to lower case
     if (colour == Piece::Black) {
-        tolower(piece);
+        piece = tolower(piece);
     }
     return piece;
 }
+
+std::ostream &operator<<(std::ostream& out, const Board & board) {
+    // start with top right square being the Piece::PieceColour::white square
+    for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; i++) {
+        int startWithWhite = 0;
+        if (i % 2 != 0) startWithWhite = 1; 
+        out << NUM_OF_SQUARES_PER_SIDE - i << " ";
+        for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
+            Piece* piece = board.getPieceAt(j, i);
+            if (piece->getType() != Piece::Empty) {
+                out << initializeBoardPiece(piece->getType(), piece->getColour());
+            } else {
+                if (j % 2 == startWithWhite) {
+                    out << "_";
+                } else {
+                    out << " ";
+                }
+            }
+        }
+        out << endl;
+    }
+
+    out << endl;
+    out << "  abcdefgh" << endl;
+
+    return out;
+}
+
