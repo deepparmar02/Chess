@@ -24,15 +24,15 @@ class Board {
         /* BIG 5 - We will deep copy the pieces */
         ~Board(); // (deep)-Destroys the Board object
         Board(const Board &other); // Copy constructor
-        // Board &operator=(const Board &other); // Copy assignment operator
-        // Board(Board &&other); // Move constructor
-        // Board &operator=(const Board &other); // Move assignment operator
+        Board &operator=(const Board &other); // Copy assignment operator
+        Board(Board &&other); // Move constructor
+        Board &operator=(Board &&other); // Move assignment operator
 
         /* ESSENTIAL BOARD FUNCTIONS, SO FAR */
 
         /* Getters and Setters, sort of */
-        Piece *getPieceAt(int col, int row) const;
-        void setPieceAt(Piece &piece, int col, int row);
+        Piece *getPieceAt(int row, int col) const;
+        void setPieceAt(Piece &piece, int row, int col);
         // cleaner alternative to getPieceAt
         // Piece operator() (char col, int row) const;
 
@@ -44,7 +44,8 @@ class Board {
          * @return true 
          * @return false 
          */
-        bool move(Move &given_move);
+        // bool move(Move &given_move);
+        bool move(int startRow, int startCol, int endRow, int endCol);
 
         /* GAME STATE METHODS */
         // inCheck checks if current player is in check or not

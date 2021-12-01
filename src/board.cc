@@ -67,35 +67,54 @@ std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
     return newPiece;
 }
 
-Board::Board(const Board &other) {
+Board::Board(const Board &other) : whose_turn{other.whose_turn} {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
             board[r][c] = createBasedOnPieceType(*other.board[r][c]);
         }
     }
 }
-/*
+
 Board & Board::operator=(const Board &other) {
     if (this != &other) {
+        whose_turn = other.whose_turn;
+        for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
+            for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
+                auto newPiece = createBasedOnPieceType(*other.board[r][c]);
+                std::swap(board[r][c], newPiece);
+            }
+        }
+    }
+    return *this;
+}
 
+Board::Board(Board &&other) : whose_turn{std::move(other.whose_turn)} {
+    for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
+        for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
+            board[r][c] = std::move(other.board[r][c]);
+        }
     }
 }
 
-Board::Board(Board &&other) {
-    
+Board & Board::operator=(Board &&other) {
+    if (this != &other) {
+        std::swap(whose_turn, other.whose_turn);
+        for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
+            for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
+                std::swap(other.board[r][c], board[r][c]);
+            }
+        }
+    }
+    return *this;
 }
 
-Board & Board::operator=(const Board &other) {
-
-}
-*/
-Piece *Board::getPieceAt(int col, int row) const {
+Piece *Board::getPieceAt(int row, int col) const {
     return board[row][col].get();
 }
 
 void Board::setPieceAt(Piece &piece, int col, int row) {
-    // auto newPiece = createBasedOnPieceType(piece);
-    // std::swap(newPiece, board[row][col]);
+    auto newPiece = createBasedOnPieceType(piece);
+    std::swap(newPiece, board[row][col]);
 }
 // cleaner alternative to getPieceAt
 /*
@@ -104,25 +123,44 @@ Piece *Board::operator() (char col, int row) const {
 } */
 
 /* MOVE FUNCTION */
-bool Board::move(Move &given_move) {
-
+bool Board::move(int startRow, int startCol, int endRow, int endCol) {
+    bool moveable = true/*board[startRow][startCol]->isValidMove(startRow, startCol, endRow, endCol, *this)*/;
+    if (moveable) {
+        std::swap(board[startRow][startCol], board[endRow][endCol]);
+        if (inCheck()) {
+            std::swap(board[startRow][startCol], board[endRow][endCol]);
+            return false;
+        } else {
+            return true;
+        }
+    } else {
+        return false;
+    }
 }
+
+// bool Board::move(Move &given_move) {
+//     int startRow = given_move.startRow;
+//     int startCol = given_move.startCol;
+//     int endRow = given_move.endRow;
+//     int endCol = given_move.endCol;
+//     return move(startRow, startCol, endRow, endCol);
+// }
 
 /* GAME STATE METHODS */
 bool Board::inCheck() {
-
+    return false;
 }
 
 bool Board::inCheckmate() {
-
+    return false;
 }
 
 bool Board::inStalemate() {
-
+    return false;
 }
 
 Piece::PieceColour Board::winner() {
-
+    return Piece::PieceColour::NoColour;
 }
 
 void Board::resetBoard() {
