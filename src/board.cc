@@ -176,8 +176,12 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         int scidx = rankToCol(start_rank);
         int eridx = rankToCol(end_rank);
         int ecidx = rankToCol(end_rank);
+
+        std::unique_ptr<Piece> temp = std::make_unique<Empty>();
         std::swap(board[sridx][scidx], board[eridx][ecidx]);
+        std::swap(temp, board[sridx][scidx]);
         if (inCheck()) {
+            std::swap(temp, board[sridx][scidx]);
             std::swap(board[sridx][scidx], board[eridx][ecidx]);
             return false;
         } else {
