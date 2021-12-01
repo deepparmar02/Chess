@@ -1,4 +1,5 @@
 #include "knight.h"
+#include "board.h"
 
 Knight::Knight(Piece::PieceColour colour): Piece{colour}{}
 

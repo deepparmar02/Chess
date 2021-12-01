@@ -14,6 +14,6 @@ bool Empty::isMoved(){
     return false;
 } 
 
-bool Empty::isValidMove(int startRow, char startCol, int endRow, char endCol, Board* board){
+bool Empty::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
     return false;
 }

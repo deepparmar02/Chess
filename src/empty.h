@@ -6,7 +6,7 @@ class Empty: public Piece {
     public:
         Empty();
         PieceType getType() override;
-        bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board* board) override;
+        bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board) override;
         PieceColour getColour() override;
         bool isMoved() override;
 

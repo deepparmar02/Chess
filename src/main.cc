@@ -6,6 +6,7 @@
 using namespace std;
 
 int main() {
+    // cout << "here" << endl;
     Board board{};
     cout << board << endl;
     string command;

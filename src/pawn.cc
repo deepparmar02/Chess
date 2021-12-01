@@ -1,7 +1,8 @@
 #include "pawn.h"
+#include "board.h"
 
 Pawn::Pawn(Piece::PieceColour colour): Piece{colour}{
-    hasDouble == false;
+    hasDouble = false;
 }
 
 Piece::PieceType Pawn::getType(){
@@ -23,7 +24,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
                 if(endRow == startRow + 1){
                     hasDouble = false;
                     return true;
-                }else if(startRow == 2 && (endRow == startRow + 2) && (board.getPieceAt(endCol, endRow - 1)->getType == Empty)){
+                }else if(startRow == 2 && (endRow == startRow + 2) && (board.getPieceAt(endCol, endRow - 1)->getType() == Empty)){
                     hasDouble = true;
                     return true;
                 }

@@ -46,8 +46,8 @@ Piece *Board::getPieceAt(char file, int rank) const {
 Board::Board() : whose_turn{Piece::PieceColour::White} {
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
-        board[fileToRow('a')][rankToCol(1)] = std::make_unique<Pawn>(Piece::PieceColour::White);
-        board[fileToRow('a')][rankToCol(1)] = std::make_unique<Pawn>(Piece::PieceColour::White);
+        board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
+        board[fileToRow(c)][rankToCol(7)] = std::make_unique<Pawn>(Piece::PieceColour::Black);
     }
 
     // empty setup
@@ -213,12 +213,13 @@ char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour)
 
 std::ostream &operator<<(std::ostream& out, const Board & board) {
     // start with top right square being the Piece::PieceColour::white square
-    for (int i = 0; i < NUM_OF_SQUARES_PER_SIDE; i++) {
+    for (int i = 7; i >= 0; i--) {
         int startWithWhite = 0;
         if (i % 2 != 0) startWithWhite = 1; 
-        out << NUM_OF_SQUARES_PER_SIDE - i << " ";
+        
+        out << i + 1 << " ";
         for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
-            Piece* piece = board.getPieceAt(i, j); // TODO: Tell Deep I swapped row and column just to match conventions
+            Piece * piece = board.getPieceAt(j + 'a', i + 1);
             if (piece->getType() != Piece::Empty) {
                 out << initializeBoardPiece(piece->getType(), piece->getColour());
             } else {

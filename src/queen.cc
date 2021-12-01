@@ -1,4 +1,5 @@
 #include "queen.h"
+#include "board.h"
 
 Queen::Queen(PieceColour colour): Piece{colour}{}
 
