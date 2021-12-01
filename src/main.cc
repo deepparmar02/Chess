@@ -37,10 +37,8 @@ int main() {
             int startRow, endRow;
             cin >> startCol >> startRow >> endCol >> endRow;
 
-            cout << startRow << "-" << startCol << endl;
-            cout << endRow << "-" << endCol << endl;
-
-            // call move function
+            board.move(startCol, startRow, endCol, endRow);
+            cout << board << endl;
             // need to handle pawn promotion move command
 
         }
