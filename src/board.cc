@@ -166,6 +166,9 @@ bool Board::inStalemate() {
 
 /* MOVE FUNCTION */
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+
+    // TODO: en passant doesnt capture, castling needs to be implemented
+    
     if (inCheckmate()) {
         return false;
     }
@@ -176,7 +179,7 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     if (piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
         int sridx = fileToRow(start_file);
         int scidx = rankToCol(start_rank);
-        int eridx = rankToCol(end_rank);
+        int eridx = fileToRow(end_file);
         int ecidx = rankToCol(end_rank);
 
         std::unique_ptr<Piece> temp = std::make_unique<Empty>();
@@ -187,11 +190,13 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             std::swap(board[sridx][scidx], board[eridx][ecidx]);
             return false;
         } else {
+            whose_turn == Piece::PieceColour::White ?  whose_turn = Piece::PieceColour::Black : whose_turn = Piece::PieceColour::White; 
             return true;
         }
     } else {
         return false;
     }
+
 }
 
 // bool Board::move(Move &given_move) {
