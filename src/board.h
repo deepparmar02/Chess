@@ -70,14 +70,16 @@ class Board {
         Piece::PieceColour whose_turn;
         std::unique_ptr<Piece> board[8][8];
 
+        void defaultSetup();
+
         // FUTURE FIELDS THAT MIGHT COME USEFUL
-        std::pair<int, int> white_king;
-        std::pair<int, int> black_king;
-        bool white_castle_kingside;
-        bool white_castle_queenside;
-        bool black_castle_kingside;
-        bool black_castle_queenside;
-        std::pair<int, int>en_passant_square;
+        // std::pair<int, int> white_king;
+        // std::pair<int, int> black_king;
+        // bool white_castle_kingside;
+        // bool white_castle_queenside;
+        // bool black_castle_kingside;
+        // bool black_castle_queenside;
+        // std::pair<int, int>en_passant_square;
 };
 
 #endif
