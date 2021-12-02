@@ -41,9 +41,13 @@ Piece *Board::getPieceAt(char file, int rank) const {
     return board[ridx][cidx].get();
 }
 
-// The internal board setup is that white pieces are on the left, black on the right.
-// a1 is [0][0], etc. up tp h8 which is [7][7]
-Board::Board() : whose_turn{Piece::PieceColour::White} {
+// cleaner alternative to getPieceAt
+Piece *Board::operator() (char col, int row) const {
+    return getPieceAt(col, row);
+}
+
+void Board::defaultSetup() {
+    whose_turn = Piece::PieceColour::White;
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
         board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
@@ -78,9 +82,16 @@ Board::Board() : whose_turn{Piece::PieceColour::White} {
     }
 }
 
+// The internal board setup is that white pieces are on the left, black on the right.
+// a1 is [0][0], etc. up tp h8 which is [7][7]
+Board::Board() : whose_turn{Piece::PieceColour::White} {
+    defaultSetup();
+}
+
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
 // TODO: Tell Vansh about explicit and make copy constructors
+// Wait for him to implement copy constructors
 std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
     std::unique_ptr<Piece> newPiece;
     // if (piece.getType() == Piece::PieceType::King) {
@@ -141,25 +152,72 @@ Board & Board::operator=(Board &&other) {
 }
 
 void Board::setPieceAt(char file, int rank, Piece &piece) {
-    return;
+    auto newPiece = createBasedOnPieceType(piece);
+    std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
 }
-// cleaner alternative to getPieceAt
-/*
-Piece *Board::operator() (char col, int row) const {
-    return getPieceAt(col, row);
-} */
 
 /* GAME STATE METHODS */
 bool Board::inCheck() {
+    // I can think of two ways to implement this. 
+
+    // This implemenation feels very "code by interface". For every square,
+    // I just find if the King can be captured by any piece on the board.
+    // If yes, it's check. This can be a bit inefficient, because I check
+    // every square, but isValidMove does some polymorphismy-encapsulationy
+    // dark magic: it just checks if at that place, it can capture. I don't
+    // have to worry about the specific ways a piece can capture the king.
+    char king_file;
+    int king_rank;
+
+    // here, we find where the king is. Inefficient but certain
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            auto piece = getPieceAt(f, r);
+            if (piece->getType() == Piece::PieceType::King) {
+                if (piece->getColour() == whose_turn) {
+                    king_file = f;
+                    king_rank = r;
+                }
+            }
+        }
+    }
+
+    // we loop through every square to see if there's a piece that is in sight of
+    // capturing the king.
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            // if a piece can move and capture the king
+            if (getPieceAt(f, r)->isValidMove(r, f, king_rank, king_file, *this)) {
+                return true;
+            }
+        }
+    }
     return false;
+
+    // The second implementation I can think of is more "code by implementation." 
+    // From the king's position, I can check for every direction (up-down, left-right, 
+    // diagonals, knight-hops) to see if the first non-empty piece I encounter is 
+    // an opponent's respective piece or not.
+    // For example, if I go horizontal and vertical, I check if there's a rook or queen.
+    // If I go diagonal, I check if there's a queen, bishop or pawn.
+    // If I go knight-hops, is there a knight.
+}
+
+// we currently store int as a dummy type. We'll decide which class to use later
+std::vector<int> Board::allPossibleMoves() {
+    std::vector<int> allMoves;
+    allMoves.push_back(0); // temporarily fill allMoves with something so it returns false
+    return allMoves;
 }
 
 bool Board::inCheckmate() {
-    return false;
+    std::vector<int> allMoves = allPossibleMoves();
+    return allMoves.size() == 0 && inCheck();
 }
 
 bool Board::inStalemate() {
-    return false;
+    std::vector<int> allMoves = allPossibleMoves();
+    return allMoves.size() == 0 && !inCheck();
 }
 
 /* MOVE FUNCTION */
@@ -223,10 +281,15 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 
 Piece::PieceColour Board::winner() {
     return Piece::PieceColour::NoColour;
+    // if (/* */) {
+    //     return Piece::PieceColour::White;
+    // } else {
+    //     return Piece::PieceColour::Black;
+    // }
 }
 
 void Board::resetBoard() {
-    return;
+    defaultSetup();
 }
 
 char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {

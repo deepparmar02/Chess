@@ -44,7 +44,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
         }else if((endCol == startCol + 1) || (endCol == startCol - 1)){ // en passant
             if(colour == White){
                 if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() != White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
-                    if(endRow = startRow + 1){
+                    if(endRow == startRow + 1){
                         isEnpassantMove = true;
                         hasDouble = false;
                         return true;
@@ -52,7 +52,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
                 }
             }else{
                 if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() == White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
-                    if(endRow = startRow - 1){
+                    if(endRow == startRow - 1){
                         isEnpassantMove = true;
                         hasDouble = false;
                         return true;
