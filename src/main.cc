@@ -47,7 +47,7 @@ int main() {
                 } else {
                     cout << "Black";
                 }
-                cout << " in check" << endl;
+                cout << " is in check." << endl;
             }
 
         }
