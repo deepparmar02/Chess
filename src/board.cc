@@ -248,9 +248,6 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 
 
         if (isEnpassantMove) {
-            cout << sridx << "   " << scidx << endl;
-            cout << eridx  << "   " << ecidx << endl;
-
             board[eridx][scidx] = std::make_unique<Empty>();
         }
         
