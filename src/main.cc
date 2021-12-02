@@ -41,6 +41,15 @@ int main() {
             cout << board << endl;
             // need to handle pawn promotion move command
 
+            if (board.inCheck()) {
+                if (board.whose_turn == Piece::PieceColour::White) {
+                    cout << "White";
+                } else {
+                    cout << "Black";
+                }
+                cout << " in check" << endl;
+            }
+
         }
         else if (command == "setup") {
             string setupCmd;
