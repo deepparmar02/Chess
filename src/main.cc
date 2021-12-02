@@ -33,13 +33,45 @@ int main() {
             // update scoreboard
         }
         else if (command == "move") {
-            char startCol, endCol;
-            int startRow, endRow;
-            cin >> startCol >> startRow >> endCol >> endRow;
+            string s;
+            getline(cin, s);  // read rest of line from input
+            istringstream ss{s};
+            string position;
+            int i = 0;
+            
+            // stores all columns (cols[0] is start column, cols[1] is end columns)
+            vector<char> cols;  
 
-            board.move(startCol, startRow, endCol, endRow);
+            // stores all rows (rows[0] is start column, rows[1] is end row)
+            vector<int> rows; 
+
+            // stores newPiece inputted for pawn promotion
+            char newPiece;
+            
+            while (ss >> position) {
+                istringstream ss1{position};
+                // if 3 strings (i==2) are inputted for move command
+                // then this is pawn promotion move
+                if (i == 2) {
+                    ss1 >> newPiece;
+                    i++;
+                    break;
+                } 
+                char col;
+                int row;
+                ss1 >> col;
+                ss1 >> row;
+                cols.push_back(col);
+                rows.push_back(row);
+                i++;
+            }
+        
+            if (i == 3) {
+                // call pawn promotion move overload method
+            } else {
+                board.move(cols[0], rows[0], cols[1], rows[1]);
+            }
             cout << board << endl;
-            // need to handle pawn promotion move command
 
             if (board.inCheck()) {
                 if (board.whose_turn == Piece::PieceColour::White) {
