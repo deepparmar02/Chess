@@ -223,7 +223,7 @@ bool Board::inStalemate() {
 /* MOVE FUNCTION */
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 
-    // TODO: en passant doesnt capture, castling needs to be implemented
+    // TODO: castling needs to be implemented
     
     if (inCheckmate()) {
         return false;
