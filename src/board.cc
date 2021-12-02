@@ -85,38 +85,6 @@ void Board::defaultSetup() {
 // The internal board setup is that white pieces are on the left, black on the right.
 // a1 is [0][0], etc. up tp h8 which is [7][7]
 Board::Board() : whose_turn{Piece::PieceColour::White} {
-    // // pawn setup
-    // for (char c = 'a'; c <= 'h'; ++c) {
-    //     board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
-    //     board[fileToRow(c)][rankToCol(7)] = std::make_unique<Pawn>(Piece::PieceColour::Black);
-    // }
-
-    // // empty setup
-    // for (char d = 'a'; d <= 'h'; ++d) {
-    //     for (char r = 3; r <= 6; ++r) {
-    //         int ridx = fileToRow(d);
-    //         int cidx = rankToCol(r);
-    //         board[ridx][cidx] = std::make_unique<Empty>();
-    //     }
-    // }
-
-    // // rest of pieces setup
-    // for (int i = 1; i <= 8; i += 7) {
-    //     Piece::PieceColour colour;
-    //     if (1 == i) {
-    //         colour = Piece::PieceColour::White;
-    //     } else {
-    //         colour = Piece::PieceColour::Black;
-    //     }
-    //     board[fileToRow('a')][rankToCol(i)] = std::make_unique<Rook>(colour);
-    //     board[fileToRow('b')][rankToCol(i)] = std::make_unique<Knight>(colour);
-    //     board[fileToRow('c')][rankToCol(i)] = std::make_unique<Bishop>(colour);
-    //     board[fileToRow('d')][rankToCol(i)] = std::make_unique<Queen>(colour);
-    //     board[fileToRow('e')][rankToCol(i)] = std::make_unique<King>(colour);
-    //     board[fileToRow('f')][rankToCol(i)] = std::make_unique<Bishop>(colour);
-    //     board[fileToRow('g')][rankToCol(i)] = std::make_unique<Knight>(colour);
-    //     board[fileToRow('h')][rankToCol(i)] = std::make_unique<Rook>(colour);
-    // }
     defaultSetup();
 }
 
@@ -188,17 +156,68 @@ void Board::setPieceAt(char file, int rank, Piece &piece) {
     std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
 }
 
-/* GAME STATE METHODS - TODO: Do it later, when I finish easy ones. */
+/* GAME STATE METHODS */
 bool Board::inCheck() {
+    // I can think of two ways to implement this. 
+
+    // This implemenation feels very "code by interface". For every square,
+    // I just find if the King can be captured by any piece on the board.
+    // If yes, it's check. This can be a bit inefficient, because I check
+    // every square, but isValidMove does some polymorphismy-encapsulationy
+    // dark magic: it just checks if at that place, it can capture. I don't
+    // have to worry about the specific ways a piece can capture the king.
+    char king_file;
+    int king_rank;
+
+    // here, we find where the king is. Inefficient but certain
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            auto piece = getPieceAt(f, r);
+            if (piece->getType() == Piece::PieceType::King) {
+                if (piece->getColour() == whose_turn) {
+                    king_file = f;
+                    king_rank = r;
+                }
+            }
+        }
+    }
+
+    // we loop through every square to see if there's a piece that is in sight of
+    // capturing the king.
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            // if a piece can move and capture the king
+            if (getPieceAt(f, r)->isValidMove(r, f, king_rank, king_file, *this)) {
+                return true;
+            }
+        }
+    }
     return false;
+
+    // The second implementation I can think of is more "code by implementation." 
+    // From the king's position, I can check for every direction (up-down, left-right, 
+    // diagonals, knight-hops) to see if the first non-empty piece I encounter is 
+    // an opponent's respective piece or not.
+    // For example, if I go horizontal and vertical, I check if there's a rook or queen.
+    // If I go diagonal, I check if there's a queen, bishop or pawn.
+    // If I go knight-hops, is there a knight.
+}
+
+// we currently store int as a dummy type. We'll decide which class to use later
+std::vector<int> Board::allPossibleMoves() {
+    std::vector<int> allMoves;
+    allMoves.push_back(0); // temporarily fill allMoves with something so it returns false
+    return allMoves;
 }
 
 bool Board::inCheckmate() {
-    return false;
+    std::vector<int> allMoves = allPossibleMoves();
+    return allMoves.size() == 0 && inCheck();
 }
 
 bool Board::inStalemate() {
-    return false;
+    std::vector<int> allMoves = allPossibleMoves();
+    return allMoves.size() == 0 && !inCheck();
 }
 
 /* MOVE FUNCTION */
@@ -227,7 +246,10 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             std::swap(board[sridx][scidx], board[eridx][ecidx]);
             return false;
         } else {
-            whose_turn == Piece::PieceColour::White ?  whose_turn = Piece::PieceColour::Black : whose_turn = Piece::PieceColour::White; 
+            // change turn
+            whose_turn = whose_turn == Piece::PieceColour::White ? 
+                         Piece::PieceColour::Black : Piece::PieceColour::White; 
+            
             return true;
         }
     } else {
@@ -246,6 +268,11 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 
 Piece::PieceColour Board::winner() {
     return Piece::PieceColour::NoColour;
+    // if (/* */) {
+    //     return Piece::PieceColour::White;
+    // } else {
+    //     return Piece::PieceColour::Black;
+    // }
 }
 
 void Board::resetBoard() {
