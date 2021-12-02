@@ -19,6 +19,7 @@ class Piece{
         virtual bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board) = 0;
         virtual PieceColour getColour() = 0;
         virtual bool isMoved() = 0; 
+        virtual bool isEnpassant();
 };
 
 #endif

@@ -1,7 +1,5 @@
 #include "knight.h"
 #include "board.h"
-#include <iostream>
-using namespace std;
 
 Knight::Knight(Piece::PieceColour colour): Piece{colour}{}
 

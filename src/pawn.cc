@@ -1,7 +1,9 @@
 #include "pawn.h"
 #include "board.h"
+#include <iostream>
+using namespace std;
 
-Pawn::Pawn(Piece::PieceColour colour): Piece{colour}{
+Pawn::Pawn(Piece::PieceColour colour): Piece{colour}, isEnpassantMove{false} {
     hasDouble = false;
 }
 
@@ -18,6 +20,10 @@ bool Pawn::isMoved(){
 } 
 
 bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
+    isEnpassantMove = false;
+    if(board.getPieceAt(endCol,endRow)->getColour() == colour){
+        return false;
+    }
     if(board.getPieceAt(endCol, endRow)->getType() == Empty){
         if(endCol == startCol){
             if(colour == White){
@@ -39,6 +45,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
             if(colour == White){
                 if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() != White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
                     if(endRow = startRow + 1){
+                        isEnpassantMove = true;
                         hasDouble = false;
                         return true;
                     }
@@ -46,6 +53,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
             }else{
                 if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() == White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
                     if(endRow = startRow - 1){
+                        isEnpassantMove = true;
                         hasDouble = false;
                         return true;
                     }
@@ -66,4 +74,8 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
         }
     }
     return false;
+}
+
+bool Pawn::isEnpassant() {
+    return isEnpassantMove;
 }

@@ -181,14 +181,30 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         int ecidx = rankToCol(end_rank);
 
         std::unique_ptr<Piece> temp = std::make_unique<Empty>();
+        
         std::swap(board[sridx][scidx], board[eridx][ecidx]);
         std::swap(temp, board[sridx][scidx]);
+
+        bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
+        Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
+
+
+        if (isEnpassantMove) {
+            cout << sridx << "   " << scidx << endl;
+            cout << eridx  << "   " << ecidx << endl;
+
+            board[eridx][scidx] = std::make_unique<Empty>();
+        }
+        
         if (inCheck()) {
             std::swap(temp, board[sridx][scidx]);
             std::swap(board[sridx][scidx], board[eridx][ecidx]);
+            if (isEnpassantMove) {
+                 board[sridx][ecidx] = std::make_unique<Pawn>(next_turn);
+            }
             return false;
         } else {
-            whose_turn == Piece::PieceColour::White ?  whose_turn = Piece::PieceColour::Black : whose_turn = Piece::PieceColour::White; 
+            whose_turn = next_turn;
             return true;
         }
     } else {
