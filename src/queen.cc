@@ -3,7 +3,9 @@
 
 Queen::Queen(PieceColour colour): Piece{colour}{}
 
-Piece::PieceType Queen::getType(){
+Queen::Queen(const Queen &other) : Piece{other.colour} {}
+
+Piece::PieceType Queen::getType() {
     return PieceType::Queen;
 }
 
@@ -48,4 +50,9 @@ bool Queen::isValidMove(int startRow, char startCol, int endRow, char endCol, Bo
         return true;
     }
     return false;
+}
+
+std::unique_ptr<Piece> Queen::make_copy() const {
+    auto newPtr = std::make_unique<Queen>(*this);
+    return newPtr;
 }

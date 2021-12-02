@@ -4,10 +4,12 @@
 
 class King: public Piece {
     public:
-        King(PieceColour colour);
+        explicit King(PieceColour colour);
+        King(const King &other);
         PieceType getType() override;
         bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board) override;
         PieceColour getColour() override;
+        std::unique_ptr<Piece> make_copy() const override;
         bool isMoved() override;
 
 };

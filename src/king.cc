@@ -3,7 +3,9 @@
 
 King::King(Piece::PieceColour colour): Piece{colour}{}
 
-Piece::PieceType King::getType(){
+King::King(const King &other) : Piece{other.colour} {}
+
+Piece::PieceType King::getType() {
     return Piece::King;
 }
 
@@ -34,4 +36,9 @@ bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
         }
     }
     return false;
+}
+
+std::unique_ptr<Piece> King::make_copy() const {
+    auto newPtr = std::make_unique<King>(*this);
+    return newPtr;
 }

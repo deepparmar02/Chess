@@ -3,8 +3,9 @@
 
 Knight::Knight(Piece::PieceColour colour): Piece{colour}{}
 
-Piece::PieceType Knight::getType(){
-    return PieceType::Knight;
+Knight::Knight(const Knight &other) : Piece{other.colour} {}
+
+Piece::PieceType Knight::getType(){        return PieceType::Knight;
 }
 
 Piece::PieceColour Knight::getColour(){
@@ -35,4 +36,9 @@ bool Knight::isValidMove(int startRow, char startCol, int endRow, char endCol, B
         }
     }
     return false;
+}
+
+std::unique_ptr<Piece> Knight::make_copy() const {
+    auto newPtr = std::make_unique<Knight>(*this);
+    return newPtr;
 }

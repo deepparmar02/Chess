@@ -35,6 +35,12 @@ std::pair<int, int> getIndexes(char file, int rank) {
     return std::make_pair(rowidx, colidx);
 }
 
+std::unique_ptr<Piece> & Board::getPointerAt(char file, int rank) {
+    int ridx = fileToRow(file);
+    int cidx = rankToCol(rank);
+    return board[ridx][cidx];
+}
+
 Piece *Board::getPieceAt(char file, int rank) const {
     int ridx = fileToRow(file);
     int cidx = rankToCol(rank);
@@ -44,6 +50,20 @@ Piece *Board::getPieceAt(char file, int rank) const {
 // cleaner alternative to getPieceAt
 Piece *Board::operator() (char col, int row) const {
     return getPieceAt(col, row);
+}
+
+// The internal board setup is that white pieces are on the left, black on the right.
+// a1 is [0][0], etc. up tp h8 which is [7][7]
+Board::Board() : 
+    whose_turn{Piece::PieceColour::White},
+    isCheckmate{false},
+    isStalemate{false}
+{
+    for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
+        for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
+            board[r][c] = std::make_unique<Empty>();
+        }
+    }
 }
 
 void Board::defaultSetup() {
@@ -80,40 +100,32 @@ void Board::defaultSetup() {
         board[fileToRow('g')][rankToCol(i)] = std::make_unique<Knight>(colour);
         board[fileToRow('h')][rankToCol(i)] = std::make_unique<Rook>(colour);
     }
-}
 
-// The internal board setup is that white pieces are on the left, black on the right.
-// a1 is [0][0], etc. up tp h8 which is [7][7]
-Board::Board() : whose_turn{Piece::PieceColour::White} {
-    defaultSetup();
+    //default state values
+    isCheckmate = false;
+    isStalemate = false;
 }
 
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
-// TODO: Tell Vansh about explicit and make copy constructors
-// Wait for him to implement copy constructors
-std::unique_ptr<Piece> createBasedOnPieceType(Piece &piece) {
-    std::unique_ptr<Piece> newPiece;
-    // if (piece.getType() == Piece::PieceType::King) {
-    //     newPiece = std::make_unique<King>(piece);
-    // } else if (piece.getType() == Piece::PieceType::Queen) {
-    //     newPiece = std::make_unique<Queen>(piece);
-    // } else if (piece.getType() == Piece::PieceType::Rook) {
-    //     newPiece = std::make_unique<Rook>(piece);
-    // } else if (piece.getType() == Piece::PieceType::Knight) {
-    //     newPiece = std::make_unique<Knight>(piece);
-    // } else if (piece.getType() == Piece::PieceType::Pawn) {
-    //     newPiece = std::make_unique<Pawn>(piece);
-    // } else if (piece.getType() == Piece::PieceType::Empty) {
-    //     newPiece = std::make_unique<Empty>(piece);
-    // }
+// TODO: Implement copy constructor for each piece type.
+std::unique_ptr<Piece> createBasedOnPieceType(const Piece *piece) {
+    std::unique_ptr<Piece> newPiece = piece->make_copy();
     return newPiece;
 }
 
-Board::Board(const Board &other) : whose_turn{other.whose_turn} {
+std::unique_ptr<Piece> createBasedOnPieceType(const std::unique_ptr<Piece> &piece) {
+    return createBasedOnPieceType(piece.get());
+}
+
+Board::Board(const Board &other) : 
+    whose_turn{other.whose_turn},
+    isCheckmate{other.isCheckmate},
+    isStalemate{other.isStalemate}
+{
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
-            board[r][c] = createBasedOnPieceType(*other.board[r][c]);
+            board[r][c] = createBasedOnPieceType(other.board[r][c]);
         }
     }
 }
@@ -121,9 +133,11 @@ Board::Board(const Board &other) : whose_turn{other.whose_turn} {
 Board & Board::operator=(const Board &other) {
     if (this != &other) {
         whose_turn = other.whose_turn;
+        isCheckmate = other.isCheckmate;
+        isStalemate = other.isStalemate;
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
             for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
-                auto newPiece = createBasedOnPieceType(*other.board[r][c]);
+                std::unique_ptr<Piece> newPiece = createBasedOnPieceType(other.board[r][c]);
                 std::swap(board[r][c], newPiece);
             }
         }
@@ -131,7 +145,11 @@ Board & Board::operator=(const Board &other) {
     return *this;
 }
 
-Board::Board(Board &&other) : whose_turn{std::move(other.whose_turn)} {
+Board::Board(Board &&other) : 
+    whose_turn{std::move(other.whose_turn)},
+    isCheckmate{std::move(other.isCheckmate)},
+    isStalemate{std::move(other.isStalemate)}
+{
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
             board[r][c] = std::move(other.board[r][c]);
@@ -142,6 +160,8 @@ Board::Board(Board &&other) : whose_turn{std::move(other.whose_turn)} {
 Board & Board::operator=(Board &&other) {
     if (this != &other) {
         std::swap(whose_turn, other.whose_turn);
+        std::swap(isCheckmate, other.isCheckmate);
+        std::swap(isStalemate, other.isStalemate);
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
             for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
                 std::swap(other.board[r][c], board[r][c]);
@@ -151,7 +171,7 @@ Board & Board::operator=(Board &&other) {
     return *this;
 }
 
-void Board::setPieceAt(char file, int rank, Piece &piece) {
+void Board::setPieceAt(char file, int rank, Piece *piece) {
     auto newPiece = createBasedOnPieceType(piece);
     std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
 }
@@ -210,24 +230,83 @@ std::vector<int> Board::allPossibleMoves() {
     return allMoves;
 }
 
+bool Board::possibleMoveExists() {
+    for (char i = 'a'; i <= 'h'; i++) {
+        for (int j = 1; j <= 8; j++){
+            auto piece = getPieceAt(i, j);
+            if(piece->getType() != Piece::PieceType::Empty){
+                if(piece->getColour() == whose_turn){
+                    for(char k = 'a'; k <= 'h'; k++){
+                        for(int l = 1; l <= 8; l++){
+                            if(piece->isValidMove(j, i, l, k, *this)){
+                                // Moving to check for check
+                                int sridx = fileToRow(i);
+                                int scidx = rankToCol(j);
+                                int eridx = fileToRow(k);
+                                int ecidx = rankToCol(l);
+
+                                std::unique_ptr<Piece> temp = std::make_unique<Empty>();
+
+                                std::swap(board[sridx][scidx], board[eridx][ecidx]);
+                                std::swap(temp, board[sridx][scidx]);
+
+                                bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
+                                Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
+
+                                if (isEnpassantMove) {
+                                    board[eridx][scidx] = std::make_unique<Empty>(); // setPieceAt coult be used here
+                                }
+                                bool check = inCheck();
+                                
+                                // Undoing the moves
+                                std::swap(temp, board[sridx][scidx]);
+                                std::swap(board[sridx][scidx], board[eridx][ecidx]);
+                                if (isEnpassantMove) {
+                                    board[sridx][ecidx] = std::make_unique<Pawn>(next_turn);
+                                }
+                                if(!check){
+                                    return true;
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return false;
+}
+
+
+
 bool Board::inCheckmate() {
-    std::vector<int> allMoves = allPossibleMoves();
-    return allMoves.size() == 0 && inCheck();
+    return isCheckmate;
 }
 
 bool Board::inStalemate() {
-    std::vector<int> allMoves = allPossibleMoves();
-    return allMoves.size() == 0 && !inCheck();
+    return isStalemate;
+}
+
+void Board::isGameOver() {
+    bool hasValidMoves = possibleMoveExists();
+    if (!hasValidMoves) {
+        if (inCheck()) {
+            isCheckmate = true;
+        } else {
+            isStalemate = true;
+        }
+    }
 }
 
 /* MOVE FUNCTION */
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
-
+    
     // TODO: castling needs to be implemented
     
-    if (inCheckmate()) {
+    if (inCheckmate() || inStalemate()) {
         return false;
     }
+
     Piece *piece = getPieceAt(start_file, start_rank);
     if (piece->getColour() != whose_turn) {
         return false;
@@ -246,7 +325,6 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
         Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
 
-
         if (isEnpassantMove) {
             board[eridx][scidx] = std::make_unique<Empty>();
         }
@@ -260,6 +338,7 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             return false;
         } else {
             whose_turn = next_turn;
+            isGameOver();
             return true;
         }
     } else {
@@ -276,14 +355,14 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 //     return move(startRow, startCol, endRow, endCol);
 // }
 
-Piece::PieceColour Board::winner() {
-    return Piece::PieceColour::NoColour;
-    // if (/* */) {
-    //     return Piece::PieceColour::White;
-    // } else {
-    //     return Piece::PieceColour::Black;
-    // }
-}
+// Piece::PieceColour Board::winner() {
+//     return Piece::PieceColour::NoColour;
+//     // if (/* */) {
+//     //     return Piece::PieceColour::White;
+//     // } else {
+//     //     return Piece::PieceColour::Black;
+//     // }
+// }
 
 void Board::resetBoard() {
     defaultSetup();
@@ -314,13 +393,13 @@ char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour)
 
 std::ostream &operator<<(std::ostream& out, const Board & board) {
     // start with top right square being the Piece::PieceColour::white square
-    for (int i = 7; i >= 0; i--) {
+    for (int i = 8; i >= 1; i--) {
         int startWithWhite = 0;
         if (i % 2 != 0) startWithWhite = 1; 
         
-        out << i + 1 << " ";
+        out << i << " ";
         for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
-            Piece * piece = board.getPieceAt(j + 'a', i + 1);
+            Piece * piece = board.getPieceAt(j + 'a', i);
             if (piece->getType() != Piece::Empty) {
                 out << initializeBoardPiece(piece->getType(), piece->getColour());
             } else {

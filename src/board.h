@@ -14,12 +14,7 @@ class Piece;
 
 class Board {
     public:
-        /**
-         * Construct a new Board object.
-         * 
-         * It sets the board's pieces in their starting, default position.
-         * (for now, at least)
-         */
+        // Construct a new Board object. It creates an empty board.
         Board();
 
         /* BIG 5 - We will deep copy the pieces */
@@ -29,11 +24,14 @@ class Board {
         Board(Board &&other); // Move constructor
         Board &operator=(Board &&other); // Move assignment operator
 
+        // defaultSetup creates the standard chess setup.
+        void defaultSetup();
+
         /* Getters and Setters, sort of */
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
-        void setPieceAt(char file, int rank, Piece &piece);
+        void setPieceAt(char file, int rank, Piece *piece);
 
         /**
          * move takes in the start and end squares, returns if it is
@@ -54,6 +52,9 @@ class Board {
         std::vector<int> allPossibleMoves();
 
         /* GAME STATE METHODS */
+        // possibleMoveExists checks if current player can make any move or not.
+        bool possibleMoveExists();
+
         // inCheck checks if current player is in check or not
         bool inCheck();
 
@@ -65,11 +66,13 @@ class Board {
         // ie, king isn't in check but can't make any valid moves
         bool inStalemate();
 
+        void isGameOver();
+
         // resetBoard goes back to default setup
         void resetBoard();
 
         // winner returns the colour of the winner
-        Piece::PieceColour winner();
+        // Piece::PieceColour winner();
 
         // TEMPORARY OUTPUT OPERATOR
         friend std::ostream &operator<<(std::ostream& out, const Board &board);
@@ -78,7 +81,10 @@ class Board {
     private:
         std::unique_ptr<Piece> board[8][8];
 
-        void defaultSetup();
+        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
+
+        bool isCheckmate;
+        bool isStalemate;
 
         // FUTURE FIELDS THAT MIGHT COME USEFUL
         // std::pair<char, int> white_king;

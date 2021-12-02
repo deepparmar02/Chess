@@ -9,6 +9,8 @@ int main() {
     // cout << "here" << endl;
     Board board{};
     cout << board << endl;
+    board.defaultSetup();
+    cout << board << endl;
     string command;
     while (cin >> command) {
         if (command == "game") {
@@ -39,7 +41,7 @@ int main() {
             string position;
             int i = 0;
             
-            // stores all columns (cols[0] is start column, cols[1] is end columns)
+            // stores all columns (cols[0] is start column, cols[1] is end column)
             vector<char> cols;  
 
             // stores all rows (rows[0] is start column, rows[1] is end row)
@@ -50,11 +52,11 @@ int main() {
             
             while (ss >> position) {
                 istringstream ss1{position};
+                i++;
                 // if 3 strings (i==2) are inputted for move command
                 // then this is pawn promotion move
-                if (i == 2) {
+                if (i == 3) {
                     ss1 >> newPiece;
-                    i++;
                     break;
                 } 
                 char col;
@@ -63,25 +65,38 @@ int main() {
                 ss1 >> row;
                 cols.push_back(col);
                 rows.push_back(row);
-                i++;
             }
-        
+
+            bool valid_move = false;
             if (i == 3) {
                 // call pawn promotion move overload method
             } else {
-                board.move(cols[0], rows[0], cols[1], rows[1]);
+                valid_move = board.move(cols[0], rows[0], cols[1], rows[1]);
             }
             cout << board << endl;
 
-            if (board.inCheck()) {
-                if (board.whose_turn == Piece::PieceColour::White) {
-                    cout << "White";
-                } else {
-                    cout << "Black";
+            if (valid_move) {
+                if (board.inCheckmate()) {
+                    cout << "Checkmate! ";
+                    if (board.whose_turn == Piece::PieceColour::White) {
+                        cout << "Black";
+                    } else {
+                        cout << "White";
+                    }
+                    cout << " wins" << endl;
                 }
-                cout << " is in check." << endl;
+                else if (board.inStalemate()) {
+                    cout << "Stalemate" << endl;
+                }
+                else if (board.inCheck()) {
+                    if (board.whose_turn == Piece::PieceColour::White) {
+                        cout << "White";
+                    } else {
+                        cout << "Black";
+                    }
+                    cout << " is in check." << endl;
+                }
             }
-
         }
         else if (command == "setup") {
             string setupCmd;

@@ -3,6 +3,8 @@
 
 Bishop::Bishop(Piece::PieceColour colour): Piece{colour}{}
 
+Bishop::Bishop(const Bishop &other) : Piece{other.colour} {}
+
 Piece::PieceType Bishop::getType() {
     return PieceType::Bishop;
 }
@@ -32,4 +34,9 @@ bool Bishop::isValidMove(int startRow, char startCol, int endRow, char endCol, B
         return true;
     }
     return false;
+}
+
+std::unique_ptr<Piece> Bishop::make_copy() const {
+    auto newPtr = std::make_unique<Bishop>(*this);
+    return newPtr;
 }

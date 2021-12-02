@@ -3,7 +3,9 @@
 
 Rook::Rook(Piece::PieceColour colour): Piece{colour}{}
 
-Piece::PieceType Rook::getType(){
+Rook::Rook(const Rook &other) : Piece{other.colour} {}
+
+Piece::PieceType Rook::getType() {
     return PieceType::Rook;
 }
 
@@ -37,4 +39,9 @@ bool Rook::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
         return true;
     }
     return false;
+}
+
+std::unique_ptr<Piece> Rook::make_copy() const {
+    auto newPtr = std::make_unique<Rook>(*this);
+    return newPtr;
 }

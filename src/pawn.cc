@@ -7,7 +7,13 @@ Pawn::Pawn(Piece::PieceColour colour): Piece{colour}, isEnpassantMove{false} {
     hasDouble = false;
 }
 
-Piece::PieceType Pawn::getType(){
+Pawn::Pawn(const Pawn &other) : 
+    Piece{other.colour}, 
+    hasDouble{other.hasDouble},
+    isEnpassantMove{other.isEnpassantMove}
+{}
+
+Piece::PieceType Pawn::getType() {
     return PieceType::Pawn;
 }
 
@@ -78,4 +84,9 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
 
 bool Pawn::isEnpassant() {
     return isEnpassantMove;
+}
+
+std::unique_ptr<Piece> Pawn::make_copy() const {
+    auto newPtr = std::make_unique<Pawn>(*this);
+    return newPtr;
 }
