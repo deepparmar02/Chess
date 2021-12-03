@@ -105,15 +105,21 @@ int main() {
                     char piece, col;
                     int row;
                     cin >> piece >> col >> row;
+
+                    board.addPiece(col, row, piece);
                 }
                 else if (setupCmd == "-") {
                     char col;
                     int row;
                     cin >> col >> row;
+
+                    board.deletePiece(col, row);
                 }
                 else if (setupCmd == "done") {
                     // check for board validity before quitting
-                    break;
+                    if (board.endSetupMode()) {
+                        break;
+                    }
                 }
                 else {
                    cerr << "Invalid Command" << endl;

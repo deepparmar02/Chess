@@ -40,7 +40,7 @@ class Board {
          */
         // bool move(Move &given_move);
         bool move(char start_file, int start_rank, char end_file, int end_rank);
-        
+
         /**
          * allPossibleMoves returns an array of valid moves
          * 
@@ -66,7 +66,26 @@ class Board {
         // ie, king isn't in check but can't make any valid moves
         bool inStalemate();
 
+        // isGameOver checks if player is in checkmate or stalemate
+        // which means game cannot be continued
         void isGameOver();
+
+        // isTwoKings checks if there are exactly 1 white king 
+        // and 1 black king
+        bool isTwoKings(); 
+
+        // isPawnLastRow checks if there are no pawns in the last rows
+        bool isPawnLastRow();
+
+        // endSetupMode checks if setup mode could be exited
+        // conditions: 2 kings (1 White, 1 Black), no pawns on last row, no king is in check
+        bool endSetupMode();
+
+        // addPiece adds the piece at (file, rank)
+        void addPiece(char file, int rank, char piece);
+
+        // deletePiece deletes piece at (file, rank)
+        void deletePiece(char file, int rank);
 
         // resetBoard goes back to default setup
         void resetBoard();
@@ -80,20 +99,24 @@ class Board {
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
+
+        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
+
         bool isCheckmate;
         bool isStalemate;
+
         // FUTURE FIELDS THAT MIGHT COME USEFUL
         // std::pair<char, int> white_king;
         // std::pair<char, int> black_king;
-        // bool white_castle_kingside;
-        // bool white_castle_queenside;
-        // bool black_castle_kingside;
-        // bool black_castle_queenside;
+        bool white_castle_kingside;
+        bool white_castle_queenside;
+        bool black_castle_kingside;
+        bool black_castle_queenside;
         // Keep track of en passant.
         char en_passant_file;
         int en_passant_rank;
 
-        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
+        // std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         bool isValidMove(char start_file, int start_rank, char end_file, int end_rank);
         void resetEnPassant();
 

@@ -47,6 +47,34 @@ Piece *Board::getPieceAt(char file, int rank) const {
     return board[ridx][cidx].get();
 }
 
+std::unique_ptr<Piece> convertToPiece(char piece){
+    if(piece == 'K'){
+        return std::make_unique<King>(Piece::PieceColour::White);
+    }else if(piece == 'P'){
+        return std::make_unique<Pawn>(Piece::PieceColour::White);
+    }else if(piece == 'Q'){
+        return std::make_unique<Queen>(Piece::PieceColour::White);
+    }else if(piece == 'R'){
+        return std::make_unique<Rook>(Piece::PieceColour::White);
+    }else if(piece == 'N'){
+        return std::make_unique<Knight>(Piece::PieceColour::White);
+    }else if(piece == 'B'){
+        return std::make_unique<Bishop>(Piece::PieceColour::White);
+    }else if(piece == 'k'){
+        return std::make_unique<King>(Piece::PieceColour::Black);
+    }else if(piece == 'p'){
+        return std::make_unique<Pawn>(Piece::PieceColour::Black);
+    }else if(piece == 'q'){
+        return std::make_unique<Queen>(Piece::PieceColour::Black);
+    }else if(piece == 'r'){
+        return std::make_unique<Rook>(Piece::PieceColour::Black);
+    }else if(piece == 'n'){
+        return std::make_unique<Knight>(Piece::PieceColour::Black);
+    }else if(piece == 'b'){
+        return std::make_unique<Bishop>(Piece::PieceColour::Black);
+    }
+}
+
 // cleaner alternative to getPieceAt
 Piece *Board::operator() (char col, int row) const {
     return getPieceAt(col, row);
@@ -112,16 +140,6 @@ void Board::defaultSetup() {
 
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
-// TODO: Implement copy constructor for each piece type.
-std::unique_ptr<Piece> createBasedOnPieceType(const Piece *piece) {
-    std::unique_ptr<Piece> newPiece = piece->make_copy();
-    return newPiece;
-}
-
-std::unique_ptr<Piece> createBasedOnPieceType(const std::unique_ptr<Piece> &piece) {
-    return createBasedOnPieceType(piece.get());
-}
-
 Board::Board(const Board &other) : 
     whose_turn{other.whose_turn},
     isCheckmate{other.isCheckmate},
@@ -183,9 +201,9 @@ Board & Board::operator=(Board &&other) {
     return *this;
 }
 
-void Board::setPieceAt(char file, int rank, Piece *piece) {
-    auto newPiece = createBasedOnPieceType(piece);
-    std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
+void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
+    auto newPiece = piece->make_copy();
+    std::swap(newPiece, getPieceAt(file, rank));
 }
 
 /* GAME STATE METHODS */
@@ -209,6 +227,7 @@ bool Board::inCheck() {
                 if (piece->getColour() == whose_turn) {
                     king_file = f;
                     king_rank = r;
+                    break;
                 }
             }
         }
@@ -241,6 +260,12 @@ void Board::resetEnPassant() {
     en_passant_rank = 0;
 }
 
+void Board::setCastlingState(char file, int rank, Piece::PieceType type, int &castling_status) {
+    if (getPieceAt(file, rank) != type) {
+        castling_status = false;
+    }
+}
+
 /* MOVE FUNCTION */
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     // constants for pawn, king and rook, so I don't have to type.
@@ -262,8 +287,14 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
         std::swap(start_piece, end_piece);
         std::swap(start_piece, capturedPiece);
+
+        bool enPassant = false;
         std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
-        if (start_piece->getType() == typeKing) { // we attempt castling
+
+        bool castleAttempt = false;
+        std::unique_ptr<Piece> rookTemp = std::make_unique<Empty>();
+        
+        if (end_piece->getType() == typeKing) { // we attempt castling
             
         } else if (end_piece->getType() == typePawn) {
             // set en passant square
@@ -275,6 +306,7 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             // en passant
             if (end_rank == en_passant_rank && end_file == en_passant_file) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+                enPassant = true;
             }
 
             // pawn promotion
@@ -285,7 +317,9 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             // }
         }
         if (inCheck()) {
-            std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+            if (enPassant) {
+                std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+            }
             std::swap(start_piece, capturedPiece);
             std::swap(start_piece, end_piece);
             resetEnPassant();
@@ -306,6 +340,30 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
                     resetEnPassant();
                 }
             }
+
+            // if white king has moved, even when it moved back, it lost the ability to castle
+            setCastlingState('e',1, typeKing, white_castle_kingside);
+            setCastlingState('e',1, typeKing, white_castle_queenside);
+            
+            // if black king has moved, even when it moved back, it lost the ability to castle
+            setCastlingState('e',8, typeKing, black_castle_kingside);
+            setCastlingState('e',8, typeKing, black_castle_queenside);
+
+            setCastlingState('a',1, typeRook, white_castle_queenside);
+            
+            setCastlingState('h',1, typeRook, white_castle_kingside);
+
+            auto maybe_white_king_rook = getPieceAt('h', 1);
+            if (maybe_white_king_rook != typeRook) {
+                white_castle_kingside = false;
+            }
+
+            auto maybe_black_queen_rook = getPieceAt('a', 8);
+            if (maybe_black_queen_rook != typeRook) {
+                white_castle_queenside = false;
+            }
+
+            
             return true;
         }
     } else {
@@ -319,6 +377,7 @@ std::vector<int> Board::allPossibleMoves() {
     allMoves.push_back(0); // temporarily fill allMoves with something so it returns false
     return allMoves;
 }
+
 
 bool Board::possibleMoveExists() {
     for (char i = 'a'; i <= 'h'; i++) {
@@ -386,6 +445,54 @@ void Board::isGameOver() {
             isStalemate = true;
         }
     }
+}
+
+bool Board::isTwoKings() {
+    int whiteKings = 0;
+    int blackKings = 0;
+    for(char i = 'a'; i <= 'h'; i++){
+        for(int j = 1; j <= 8; j++){
+            if(getPieceAt(i, j)->getType() == Piece::PieceType::King){
+                if(getPieceAt(i, j)->getColour == Piece::PieceColour::White){
+                    whiteKings++;
+                }else{
+                    blackKings++
+                }
+                if(whiteKings > 1 || blackKings > 1){
+                    return false;
+                }
+            }
+        }
+    }
+    if(whiteKings != 1 && blackKings != 1){
+        return false;
+    }
+    return true;
+}
+
+void Board::addPiece(char file, int rank, char piece){
+    setPieceAt(file, rank, convertToPiece(piece));
+}
+
+void Board::deletePiece(char file, int rank) {
+    setPieceAt(file, rank, std::make_unique<Empty>());
+}
+
+bool Board::isPawnLastRow() {
+    for (int i = 1; i <=  8; i++) {
+        if (getPieceAt('a', i)->getType() == Piece::PieceType::Pawn ||
+            getPieceAt('h', i)->getType() == Piece::PieceType::Pawn) {
+            return false;
+        }
+    }
+    return true;
+}
+
+bool Board::endSetupMode() {
+    if (!isPawnLastRow() && !isTwoKings() && !inCheck()) {
+        return true;
+    }
+    return false;
 }
 
 // bool Board::move(Move &given_move) {
