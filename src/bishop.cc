@@ -13,11 +13,7 @@ Piece::PieceColour Bishop::getColour() {
     return colour;
 }
 
-bool Bishop::isMoved() {
-    return false;
-} 
-
-bool Bishop::isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board){
+bool Bishop::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
     if(board.getPieceAt(endCol, endRow)->getColour() == colour){
         return false;
     }

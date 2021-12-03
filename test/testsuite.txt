@@ -1,0 +1,7 @@
+dutchDefenseCheckmate
+enpassant
+enpassant2
+fastestStalemate
+foolsMate
+twoMoveCheckmate
+scholarsMate

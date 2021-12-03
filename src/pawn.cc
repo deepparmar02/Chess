@@ -3,14 +3,10 @@
 #include <iostream>
 using namespace std;
 
-Pawn::Pawn(Piece::PieceColour colour): Piece{colour}, isEnpassantMove{false} {
-    hasDouble = false;
-}
+Pawn::Pawn(Piece::PieceColour colour): Piece{colour} {}
 
 Pawn::Pawn(const Pawn &other) : 
-    Piece{other.colour}, 
-    hasDouble{other.hasDouble},
-    isEnpassantMove{other.isEnpassantMove}
+    Piece{other.colour}
 {}
 
 Piece::PieceType Pawn::getType() {
@@ -21,69 +17,46 @@ Piece::PieceColour Pawn::getColour(){
     return colour;
 }
 
-bool Pawn::isMoved(){
-    return hasDouble;
-} 
 
-bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
-    isEnpassantMove = false;
-    if(board.getPieceAt(endCol,endRow)->getColour() == colour){
+bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
+    if (board(endCol,endRow)->getColour() == colour){
         return false;
     }
-    if(board.getPieceAt(endCol, endRow)->getType() == Empty){
-        if(endCol == startCol){
-            if(colour == White){
-                if(endRow == startRow + 1){
-                    hasDouble = false;
-                    return true;
-                }else if(startRow == 2 && (endRow == startRow + 2) && (board.getPieceAt(endCol, endRow - 1)->getType() == Empty)){
-                    hasDouble = true;
-                    return true;
-                }
-            }else if(endRow == startRow - 1){
-                hasDouble = false;
-                return true;
-            }else if(startRow == 7 && (endRow == startRow - 2) && (board.getPieceAt(endCol, endRow + 1)->getType() == Empty)){
-                hasDouble = true;
-                return true;
-            }
-        }else if((endCol == startCol + 1) || (endCol == startCol - 1)){ // en passant
-            if(colour == White){
-                if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() != White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
-                    if(endRow == startRow + 1){
-                        isEnpassantMove = true;
-                        hasDouble = false;
-                        return true;
-                    }
-                }
-            }else{
-                if(board.getPieceAt(endCol, startRow)->getType() == PieceType::Pawn && board.getPieceAt(endCol, startRow)->getColour() == White && board.getPieceAt(endCol, startRow)->isMoved() == true){ // adjacent pawn is of different colour has moved double
-                    if(endRow == startRow - 1){
-                        isEnpassantMove = true;
-                        hasDouble = false;
-                        return true;
-                    }
-                }
-            }
-        }
-    }else if(board.getPieceAt(endCol, endRow)->getColour() != colour){
-        if((endCol == startCol + 1) || (endCol == startCol - 1)){
-            if(colour == White){
-                if(endRow == startRow + 1){
-                    hasDouble = false;
-                    return true;
-                }
-            }else if(endRow == startRow - 1){
-                hasDouble = false;
-                return true;
-            }
-        }
+    int dir, starting_pawn_rank;
+    Piece::PieceColour opponent;
+    if (colour == White) {
+        dir = 1;
+        starting_pawn_rank = 2;
+        opponent = Black;
+    } else {
+        dir = -1;
+        starting_pawn_rank = 7;
+        opponent = White;
     }
-    return false;
-}
 
-bool Pawn::isEnpassant() {
-    return isEnpassantMove;
+    if (startCol == endCol) {
+        if (board(startCol, startRow + dir)->getType() != Empty) {
+            return false;
+        } else if (endRow - startRow == dir) {
+            return true;
+        } else if (startRow == starting_pawn_rank && endRow - startRow == dir * 2) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (endCol - startCol == 1 || endCol - startCol == -1) {
+        if (endRow - startRow != dir) {
+            return false;
+        } else if (board(endCol, endRow)->getColour() == opponent) {
+            return true;
+        } else if (endRow == board.en_passant_rank && endCol == board.en_passant_file) {
+            return true;
+        } else {
+            return false;
+        }
+    } else {
+        return false;
+    }
 }
 
 std::unique_ptr<Piece> Pawn::make_copy() const {

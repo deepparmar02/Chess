@@ -13,11 +13,7 @@ Piece::PieceColour Queen::getColour(){
     return colour;
 }
 
-bool Queen::isMoved(){
-    return false;
-} 
-
-bool Queen::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
+bool Queen::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
     if(board.getPieceAt(endCol,endRow)->getColour() == colour){
         return false;
     }

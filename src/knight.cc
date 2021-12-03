@@ -12,11 +12,7 @@ Piece::PieceColour Knight::getColour(){
     return colour;
 }
 
-bool Knight::isMoved(){
-    return false;
-} 
-
-bool Knight::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
+bool Knight::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
     if(board.getPieceAt(endCol, endRow)->getColour() == colour){
         return false;
     }
