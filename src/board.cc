@@ -52,12 +52,18 @@ Piece *Board::operator() (char col, int row) const {
     return getPieceAt(col, row);
 }
 
+// TODO: Add the castling fields to ctors and assignment methods
+
 // The internal board setup is that white pieces are on the left, black on the right.
 // a1 is [0][0], etc. up tp h8 which is [7][7]
 Board::Board() : 
     whose_turn{Piece::PieceColour::White},
     isCheckmate{false},
     isStalemate{false},
+    white_castle_kingside{false},
+    white_castle_queenside{false},
+    black_castle_kingside{false},
+    black_castle_queenside{false},
     en_passant_file{'\0'},
     en_passant_rank{'\0'}
 {
@@ -75,6 +81,10 @@ void Board::defaultSetup() {
     en_passant_rank = 0;
     isCheckmate = false;
     isStalemate = false;
+    white_castle_kingside = true;
+    white_castle_queenside = true;
+    black_castle_kingside = true;
+    black_castle_queenside = true;
 
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
@@ -239,7 +249,6 @@ void Board::setCastlingState(char file, int rank, Piece::PieceType type, bool &c
 
 void Board::checkCastling() {
     // constants for pawn, king and rook, so I don't have to type.
-    auto typePawn = Piece::PieceType::Pawn;
     auto typeKing = Piece::PieceType::King;
     auto typeRook = Piece::PieceType::Rook;
 
@@ -279,17 +288,39 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     if (start_piece->getColour() != whose_turn) {
         return false;
     }
+
+    // for castling, King piece must check if it's possible
     if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
         std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
         std::swap(start_piece, end_piece);
         std::swap(start_piece, capturedPiece);
 
-        bool castleAttempt = false;
-        std::unique_ptr<Piece> rookTemp = std::make_unique<Empty>();
+        int castleRank = 0;
+        bool kingside = false;
+        bool queenside = false;
         
-        if (end_piece->getType() == typeKing) { // we attempt castling
-            
-        } 
+        if (end_piece->getType() == typeKing && 2 == abs(end_file - start_file)) {
+            // TODO: Check if King is not in check when moving to any of the 
+            if (whose_turn == White) {
+                castleRank = 1;
+                kingside = white_castle_kingside;
+                queenside = white_castle_queenside;
+            } else {
+                castleRank = 8;
+                kingside = black_castle_kingside;
+                queenside = black_castle_queenside;
+            }
+
+            if (2 == end_file - start_file && kingside) {
+                // kingside castle
+                std::swap(getPointerAt('h', castleRank), getPointerAt('f', castleRank));
+                kingside = true;
+            } else if (-2 == end_file - start_file && queenside) {
+                // queenside castle
+                std::swap(getPointerAt('a', castleRank), getPointerAt('d', castleRank));
+                queenside = true;
+            } 
+        }
         
         bool enPassant = false;
         std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
@@ -318,6 +349,12 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         if (inCheck()) {
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+            }
+            if (kingside) {
+                std::swap(getPointerAt('h', castleRank), getPointerAt('f', castleRank));
+            }
+            if (queenside) {
+                std::swap(getPointerAt('a', castleRank), getPointerAt('d', castleRank));
             }
             std::swap(start_piece, capturedPiece);
             std::swap(start_piece, end_piece);

@@ -99,8 +99,9 @@ class Board {
         void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
         void checkCastling();
 
+        // for now, we use friend. breaks encapsulation but easy to write and test
         friend class Pawn;
-        // Knight, Bishop, Rook, Queen, King;
+        friend class King;
 };
 
 #endif
