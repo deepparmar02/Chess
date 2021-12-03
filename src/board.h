@@ -85,10 +85,10 @@ class Board {
         // FUTURE FIELDS THAT MIGHT COME USEFUL
         // std::pair<char, int> white_king;
         // std::pair<char, int> black_king;
-        // bool white_castle_kingside;
-        // bool white_castle_queenside;
-        // bool black_castle_kingside;
-        // bool black_castle_queenside;
+        bool white_castle_kingside;
+        bool white_castle_queenside;
+        bool black_castle_kingside;
+        bool black_castle_queenside;
         // Keep track of en passant.
         char en_passant_file;
         int en_passant_rank;
@@ -96,6 +96,8 @@ class Board {
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         bool isValidMove(char start_file, int start_rank, char end_file, int end_rank);
         void resetEnPassant();
+        void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
+        void checkCastling();
 
         friend class Pawn;
         // Knight, Bishop, Rook, Queen, King;
