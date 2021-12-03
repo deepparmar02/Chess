@@ -7,9 +7,8 @@ class Rook: public Piece {
         explicit Rook(PieceColour colour);
         Rook(const Rook &other);
         PieceType getType() override;
-        bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board) override;
+        bool isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board) override;
         PieceColour getColour() override;
-        bool isMoved() override;
         std::unique_ptr<Piece> make_copy() const override;
 };
 

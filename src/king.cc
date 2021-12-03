@@ -13,11 +13,7 @@ Piece::PieceColour King::getColour(){
     return colour;
 }
 
-bool King::isMoved(){
-    return false;
-} 
-
-bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board){
+bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
     if(board.getPieceAt(endCol, endRow)->getColour() == colour){
         return false;
     }

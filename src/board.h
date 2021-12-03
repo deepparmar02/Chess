@@ -40,7 +40,7 @@ class Board {
          */
         // bool move(Move &given_move);
         bool move(char start_file, int start_rank, char end_file, int end_rank);
-
+        
         /**
          * allPossibleMoves returns an array of valid moves
          * 
@@ -80,12 +80,8 @@ class Board {
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
-
-        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
-
         bool isCheckmate;
         bool isStalemate;
-
         // FUTURE FIELDS THAT MIGHT COME USEFUL
         // std::pair<char, int> white_king;
         // std::pair<char, int> black_king;
@@ -94,7 +90,15 @@ class Board {
         // bool black_castle_kingside;
         // bool black_castle_queenside;
         // Keep track of en passant.
-        // std::pair<int, int>en_passant_square;
+        char en_passant_file;
+        int en_passant_rank;
+
+        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
+        bool isValidMove(char start_file, int start_rank, char end_file, int end_rank);
+        void resetEnPassant();
+
+        friend class Pawn;
+        // Knight, Bishop, Rook, Queen, King;
 };
 
 #endif

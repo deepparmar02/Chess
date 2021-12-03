@@ -57,7 +57,9 @@ Piece *Board::operator() (char col, int row) const {
 Board::Board() : 
     whose_turn{Piece::PieceColour::White},
     isCheckmate{false},
-    isStalemate{false}
+    isStalemate{false},
+    en_passant_file{'\0'},
+    en_passant_rank{'\0'}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -67,7 +69,13 @@ Board::Board() :
 }
 
 void Board::defaultSetup() {
+    //default state values
     whose_turn = Piece::PieceColour::White;
+    en_passant_file = '\0';
+    en_passant_rank = 0;
+    isCheckmate = false;
+    isStalemate = false;
+
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
         board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
@@ -100,10 +108,6 @@ void Board::defaultSetup() {
         board[fileToRow('g')][rankToCol(i)] = std::make_unique<Knight>(colour);
         board[fileToRow('h')][rankToCol(i)] = std::make_unique<Rook>(colour);
     }
-
-    //default state values
-    isCheckmate = false;
-    isStalemate = false;
 }
 
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
@@ -121,7 +125,9 @@ std::unique_ptr<Piece> createBasedOnPieceType(const std::unique_ptr<Piece> &piec
 Board::Board(const Board &other) : 
     whose_turn{other.whose_turn},
     isCheckmate{other.isCheckmate},
-    isStalemate{other.isStalemate}
+    isStalemate{other.isStalemate},
+    en_passant_file{other.en_passant_file},
+    en_passant_rank{other.en_passant_rank}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -135,6 +141,8 @@ Board & Board::operator=(const Board &other) {
         whose_turn = other.whose_turn;
         isCheckmate = other.isCheckmate;
         isStalemate = other.isStalemate;
+        en_passant_file = other.en_passant_file;
+        en_passant_rank = other.en_passant_rank;
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
             for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
                 std::unique_ptr<Piece> newPiece = createBasedOnPieceType(other.board[r][c]);
@@ -148,7 +156,9 @@ Board & Board::operator=(const Board &other) {
 Board::Board(Board &&other) : 
     whose_turn{std::move(other.whose_turn)},
     isCheckmate{std::move(other.isCheckmate)},
-    isStalemate{std::move(other.isStalemate)}
+    isStalemate{std::move(other.isStalemate)},
+    en_passant_file{std::move(other.en_passant_file)},
+    en_passant_rank{std::move(other.en_passant_rank)}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -162,6 +172,8 @@ Board & Board::operator=(Board &&other) {
         std::swap(whose_turn, other.whose_turn);
         std::swap(isCheckmate, other.isCheckmate);
         std::swap(isStalemate, other.isStalemate);
+        std::swap(en_passant_rank, other.en_passant_rank);
+        std::swap(en_passant_file, other.en_passant_file);
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
             for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
                 std::swap(other.board[r][c], board[r][c]);
@@ -221,6 +233,84 @@ bool Board::inCheck() {
     // For example, if I go horizontal and vertical, I check if there's a rook or queen.
     // If I go diagonal, I check if there's a queen, bishop or pawn.
     // If I go knight-hops, is there a knight.
+}
+
+// reset en_passant_every time you start your move
+void Board::resetEnPassant() {
+    en_passant_file = '\0';
+    en_passant_rank = 0;
+}
+
+/* MOVE FUNCTION */
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+    // constants for pawn, king and rook, so I don't have to type.
+    auto typePawn = Piece::PieceType::Pawn;
+    auto typeKing = Piece::PieceType::King;
+    auto typeRook = Piece::PieceType::Rook;
+
+    // colour constants
+    auto White = Piece::PieceColour::White;
+    auto Black = Piece::PieceColour::Black;
+
+    std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
+    std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
+
+    if (start_piece->getColour() != whose_turn) {
+        return false;
+    }
+    if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
+        std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
+        std::swap(start_piece, end_piece);
+        std::swap(start_piece, capturedPiece);
+        std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
+        if (start_piece->getType() == typeKing) { // we attempt castling
+            
+        } else if (end_piece->getType() == typePawn) {
+            // set en passant square
+            if (end_rank - start_rank == 2 && end_file == start_file) {
+                en_passant_file = start_file;
+                en_passant_rank = (start_rank + end_rank) / 2;
+            }
+
+            // en passant
+            if (end_rank == en_passant_rank && end_file == en_passant_file) {
+                std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+            }
+
+            // pawn promotion
+            // if (end_rank == 8) {
+
+            // } else {
+
+            // }
+        }
+        if (inCheck()) {
+            std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+            std::swap(start_piece, capturedPiece);
+            std::swap(start_piece, end_piece);
+            resetEnPassant();
+            return false;
+        } else {
+            if (whose_turn == White) {
+                whose_turn = Black;
+                // black's en passant square from last turn
+                // is in rank 6, so reset when it's black's turn
+                if (en_passant_rank == 6) {
+                    resetEnPassant();
+                }
+            } else {
+                whose_turn = White;
+                // white's en passant square from last turn 
+                // is in rank 3, so reset when it's white's turn
+                if (en_passant_rank == 3) {
+                    resetEnPassant();
+                }
+            }
+            return true;
+        }
+    } else {
+        return false;
+    }
 }
 
 // we currently store int as a dummy type. We'll decide which class to use later
@@ -296,55 +386,6 @@ void Board::isGameOver() {
             isStalemate = true;
         }
     }
-}
-
-/* MOVE FUNCTION */
-bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
-    
-    // TODO: castling needs to be implemented
-    
-    if (inCheckmate() || inStalemate()) {
-        return false;
-    }
-
-    Piece *piece = getPieceAt(start_file, start_rank);
-    if (piece->getColour() != whose_turn) {
-        return false;
-    }
-    if (piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
-        int sridx = fileToRow(start_file);
-        int scidx = rankToCol(start_rank);
-        int eridx = fileToRow(end_file);
-        int ecidx = rankToCol(end_rank);
-
-        std::unique_ptr<Piece> temp = std::make_unique<Empty>();
-        
-        std::swap(board[sridx][scidx], board[eridx][ecidx]);
-        std::swap(temp, board[sridx][scidx]);
-
-        bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
-        Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
-
-        if (isEnpassantMove) {
-            board[eridx][scidx] = std::make_unique<Empty>();
-        }
-        
-        if (inCheck()) {
-            std::swap(temp, board[sridx][scidx]);
-            std::swap(board[sridx][scidx], board[eridx][ecidx]);
-            if (isEnpassantMove) {
-                 board[sridx][ecidx] = std::make_unique<Pawn>(next_turn);
-            }
-            return false;
-        } else {
-            whose_turn = next_turn;
-            isGameOver();
-            return true;
-        }
-    } else {
-        return false;
-    }
-
 }
 
 // bool Board::move(Move &given_move) {

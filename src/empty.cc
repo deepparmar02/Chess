@@ -12,11 +12,7 @@ Piece::PieceColour Empty::getColour(){
     return colour;
 }
 
-bool Empty::isMoved(){
-    return false;
-} 
-
-bool Empty::isValidMove(int startRow, char startCol, int endRow, char endCol, Board& board){
+bool Empty::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
     return false;
 }
 

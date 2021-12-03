@@ -1,0 +1,3 @@
+#!/bin/bash
+
+produceOutputs testsuite.txt ../src/chess

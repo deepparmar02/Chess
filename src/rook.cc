@@ -13,11 +13,7 @@ Piece::PieceColour Rook::getColour(){
     return colour;
 }
 
-bool Rook::isMoved(){
-    return false;
-} 
-
-bool Rook::isValidMove(int startRow, char startCol, int endRow, char endCol, Board & board){
+bool Rook::isValidMove(int startRow, char startCol, int endRow, char endCol, Board const & board){
     if(board.getPieceAt(endCol, endRow)->getColour() == colour){
         return false;
     }
