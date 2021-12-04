@@ -10,8 +10,6 @@ class Piece;
 // Note the British/Canadian spelling of Color, not American Color
 // enum PieceColour {White, Black, NoColour};
 
-// TODO: Add initialize function or something
-
 class Board {
     public:
         // Construct a new Board object. It creates an empty board.

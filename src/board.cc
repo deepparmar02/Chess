@@ -139,6 +139,10 @@ Board::Board(const Board &other) :
     whose_turn{other.whose_turn},
     isCheckmate{other.isCheckmate},
     isStalemate{other.isStalemate},
+    white_castle_kingside{other.white_castle_kingside},
+    white_castle_queenside{other.white_castle_queenside},
+    black_castle_kingside{other.black_castle_kingside},
+    black_castle_queenside{other.black_castle_queenside},
     en_passant_file{other.en_passant_file},
     en_passant_rank{other.en_passant_rank}
 {
@@ -154,6 +158,10 @@ Board & Board::operator=(const Board &other) {
         whose_turn = other.whose_turn;
         isCheckmate = other.isCheckmate;
         isStalemate = other.isStalemate;
+        white_castle_kingside = other.white_castle_kingside;
+        white_castle_queenside = other.white_castle_queenside;
+        black_castle_kingside = other.black_castle_kingside;
+        black_castle_queenside = other.black_castle_queenside;
         en_passant_file = other.en_passant_file;
         en_passant_rank = other.en_passant_rank;
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
@@ -170,6 +178,10 @@ Board::Board(Board &&other) :
     whose_turn{std::move(other.whose_turn)},
     isCheckmate{std::move(other.isCheckmate)},
     isStalemate{std::move(other.isStalemate)},
+    white_castle_kingside{std::move(other.white_castle_kingside)},
+    white_castle_queenside{std::move(other.white_castle_queenside)},
+    black_castle_kingside{std::move(other.black_castle_kingside)},
+    black_castle_queenside{std::move(other.black_castle_queenside)},
     en_passant_file{std::move(other.en_passant_file)},
     en_passant_rank{std::move(other.en_passant_rank)}
 {
@@ -185,6 +197,10 @@ Board & Board::operator=(Board &&other) {
         std::swap(whose_turn, other.whose_turn);
         std::swap(isCheckmate, other.isCheckmate);
         std::swap(isStalemate, other.isStalemate);
+        std::swap(white_castle_kingside, other.white_castle_kingside);
+        std::swap(white_castle_queenside, other.white_castle_queenside);
+        std::swap(black_castle_kingside, other.black_castle_kingside);
+        std::swap(black_castle_queenside, other.black_castle_queenside);
         std::swap(en_passant_rank, other.en_passant_rank);
         std::swap(en_passant_file, other.en_passant_file);
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
