@@ -284,9 +284,21 @@ void Board::checkCastling() {
 
 }
 
+/**
+ * @brief move_classic attempts to move a piece from start square to end square
+ * (and no other pieces). If that move is your own piece, the move follows the direction
+ * of the piece type, and that piece does not get yourself in check, it is true, and
+ * it moves to end square. Otherwise, it is false.
+ * 
+ * It does not attempt to touch other pieces other than when capturing pieces.
+ */
 bool Board::move_classic(char start_file, int start_rank, char end_file, int end_rank) {
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
     std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
+
+    if (start_piece->getColour() != whose_turn) {
+        return false;
+    }
 
     if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
         std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
@@ -296,11 +308,8 @@ bool Board::move_classic(char start_file, int start_rank, char end_file, int end
         if (inCheck()) {
             std::swap(start_piece, capturedPiece);
             std::swap(start_piece, end_piece);
-            // resetEnPassant();
-            // checkCastling();
             return false;
         } else {
-            // checkCastling();
             return true;
         }
     } else {
@@ -308,6 +317,10 @@ bool Board::move_classic(char start_file, int start_rank, char end_file, int end
     }
 }
 
+/**
+ * @brief after_move_houseekeeping resets en passant when required and 
+ * checks conditions for castling. 
+ */
 void Board::after_move_housekeeping() {
     int rank_by_colour;
     if (whose_turn == White) {
@@ -334,9 +347,21 @@ void Board::after_move_housekeeping() {
 }
 
 /* MOVE FUNCTION */
-bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+/**
+ * Notes on move. If it is not castling or en passant, we treat it as just
+ * moving from one square to another, that is, we just use move_classic
+ * 
+ * If en passant, we temporarily remove the capturing pawn. 
+ * If move is invalid, we put it back.
+ * If move is valid, we take it permanently.
+ * 
+ * If castling, we treat it as the king moving from start to intermediate,
+ * then intermediate to end. This is so we can check if king is not in check
+ * in order to facilitate castling. If all goes well, rook moves.
+ * If not, we go back to where we started.
+ */
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to) {
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
-    std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
 
     if (start_piece->getColour() != whose_turn) {
         return false;
@@ -350,7 +375,6 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         bool queenside = false;
 
         if (start_piece->getType() == typeKing && 2 == abs(end_file - start_file)) {
-            // TODO: Check if King is not in check when moving to any of the 
             if (whose_turn == White) {
                 castleRank = 1;
                 kingside = white_castle_kingside;
@@ -377,14 +401,17 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
                 return false;
             }
 
-            if (move_classic(start_file, start_rank, mid_file, end_rank)) {
-                if (move_classic(mid_file, start_rank, end_file, end_rank)) {
-                    // rook swap
-                    std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
-                    after_move_housekeeping();
-                    return true;
-                } else {
-                    move_classic(mid_file, end_rank, start_file, start_rank);
+            if (!inCheck()) { // king must not be in check
+                // the two move classics check if king does not walk into check while castling
+                if (move_classic(start_file, start_rank, mid_file, end_rank)) {
+                    if (move_classic(mid_file, start_rank, end_file, end_rank)) {
+                        // rook swap
+                        std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
+                        after_move_housekeeping();
+                        return true;
+                    } else {
+                        move_classic(mid_file, end_rank, start_file, start_rank);
+                    }
                 }
             }
 
@@ -393,7 +420,9 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 
         // en passant stuff    
         bool enPassant = false;
+        bool pawnPromote = false;
         std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
+        std::unique_ptr<Piece> promotedPiece;
 
         if (start_piece->getType() == typePawn) {
             // set en passant square
@@ -409,17 +438,22 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             }
 
             // pawn promotion
-            // if (end_rank == 8) {
-
-            // } else {
-
-            // }
+            if (end_rank == 8) {
+                if (promote_to->getType() == typeEmpty || promote_to->getType() == typePawn) {
+                    return false;
+                }
+                promotedPiece = promote_to->make_copy();
+                pawnPromote = true;
+            }
         }
 
         // if it's not castling (no custom "moving"), and even in en passant, we just move
         bool is_valid = move_classic(start_file, start_rank, end_file, end_rank);
 
         if (is_valid) {
+            if (pawnPromote) {
+                getPointerAt(end_file, end_rank) = std::move(promotedPiece);
+            }
             after_move_housekeeping();
             return true;
         } else {
@@ -433,11 +467,9 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     }
 }
 
-// we currently store int as a dummy type. We'll decide which class to use later
-std::vector<int> Board::allPossibleMoves() {
-    std::vector<int> allMoves;
-    allMoves.push_back(0); // temporarily fill allMoves with something so it returns false
-    return allMoves;
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+    Empty empty_square{};
+    return move(start_file, start_rank, end_file, end_rank, &empty_square);
 }
 
 bool Board::possibleMoveExists() {
@@ -487,8 +519,6 @@ bool Board::possibleMoveExists() {
     return false;
 }
 
-
-
 bool Board::inCheckmate() {
     return isCheckmate;
 }
@@ -507,23 +537,6 @@ void Board::isGameOver() {
         }
     }
 }
-
-// bool Board::move(Move &given_move) {
-//     int startRow = given_move.startRow;
-//     int startCol = given_move.startCol;
-//     int endRow = given_move.endRow;
-//     int endCol = given_move.endCol;
-//     return move(startRow, startCol, endRow, endCol);
-// }
-
-// Piece::PieceColour Board::winner() {
-//     return Piece::PieceColour::NoColour;
-//     // if (/* */) {
-//     //     return Piece::PieceColour::White;
-//     // } else {
-//     //     return Piece::PieceColour::Black;
-//     // }
-// }
 
 void Board::resetBoard() {
     defaultSetup();

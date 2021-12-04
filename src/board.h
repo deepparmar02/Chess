@@ -40,16 +40,7 @@ class Board {
          */
         // bool move(Move &given_move);
         bool move(char start_file, int start_rank, char end_file, int end_rank);
-        
-        /**
-         * allPossibleMoves returns an array of valid moves
-         * 
-         * for now, we store a vector of ints, as dummy type.
-         * We'll decide which class or type to use later.
-         * 
-         * @return std::vector<int> 
-         */
-        std::vector<int> allPossibleMoves();
+        bool move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to);
 
         /* GAME STATE METHODS */
         // possibleMoveExists checks if current player can make any move or not.
