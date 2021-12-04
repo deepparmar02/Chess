@@ -83,11 +83,13 @@ class Board {
         int en_passant_rank;
 
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
-        // bool isValidMove();
         void resetEnPassant();
         void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
         void checkCastling();
-        bool move_classic(char start_file, int start_rank, char end_file, int end_rank);
+        bool move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
+        bool valid_move(char start_file, int start_rank, char end_file, int end_rank, 
+                        Piece *promote_to, bool modify_board);
+        bool valid_move(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
         void after_move_housekeeping();
 
         // for now, we use friend. breaks encapsulation but easy to write and test

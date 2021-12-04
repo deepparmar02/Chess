@@ -40,7 +40,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
         } else if (endRow - startRow == dir) {
             return true;
         } else if (startRow == starting_pawn_rank && endRow - startRow == dir * 2) {
-            return true;
+            return board(endCol, endRow)->getType() == Empty;
         } else {
             return false;
         }

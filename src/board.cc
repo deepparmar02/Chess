@@ -217,7 +217,6 @@ void Board::setPieceAt(char file, int rank, Piece *piece) {
     std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
 }
 
-/* GAME STATE METHODS */
 bool Board::inCheck() {
     // I can think of two ways to implement this. 
 
@@ -301,41 +300,8 @@ void Board::checkCastling() {
 }
 
 /**
- * @brief move_classic attempts to move a piece from start square to end square
- * (and no other pieces). If that move is your own piece, the move follows the direction
- * of the piece type, and that piece does not get yourself in check, it is true, and
- * it moves to end square. Otherwise, it is false.
- * 
- * It does not attempt to touch other pieces other than when capturing pieces.
- */
-bool Board::move_classic(char start_file, int start_rank, char end_file, int end_rank) {
-    std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
-    std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
-
-    if (start_piece->getColour() != whose_turn) {
-        return false;
-    }
-
-    if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
-        std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
-        std::swap(start_piece, end_piece);
-        std::swap(start_piece, capturedPiece);
-
-        if (inCheck()) {
-            std::swap(start_piece, capturedPiece);
-            std::swap(start_piece, end_piece);
-            return false;
-        } else {
-            return true;
-        }
-    } else {
-        return false;
-    }
-}
-
-/**
- * @brief after_move_houseekeeping resets en passant when required and 
- * checks conditions for castling. 
+ * @brief after_move_houseekeeping resets en passant when required, 
+ * checks conditions for castling, and checks for checkmate and stalemate
  */
 void Board::after_move_housekeeping() {
     int rank_by_colour;
@@ -360,37 +326,54 @@ void Board::after_move_housekeeping() {
         resetEnPassant();
     }
     checkCastling();
+    isGameOver();
 }
 
-/* MOVE FUNCTION */
 /**
- * Notes on move. If it is not castling or en passant, we treat it as just
- * moving from one square to another, that is, we just use move_classic
+ * @brief move_check only checks if moving from start square to end square
+ * will you get yourself in check or not, regardless of how invalid the move is.
  * 
- * If en passant, we temporarily remove the capturing pawn. 
- * If move is invalid, we put it back.
- * If move is valid, we take it permanently.
+ * It does not attempt to touch other pieces other than when capturing pieces.
  * 
- * If castling, we treat it as the king moving from start to intermediate,
- * then intermediate to end. This is so we can check if king is not in check
- * in order to facilitate castling. If all goes well, rook moves.
- * If not, we go back to where we started.
+ * If modify_board is false, it retains the state of the board.
  */
-bool Board::move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to) {
+bool Board::move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board) {
+    std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
+    std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
+
+    std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
+    std::swap(start_piece, end_piece);
+    std::swap(start_piece, capturedPiece);
+
+    bool in_check = inCheck();
+    
+    if (in_check || !modify_board) {
+        std::swap(start_piece, capturedPiece);
+        std::swap(start_piece, end_piece);
+    }
+
+    return !in_check;
+}
+
+// If modify_board is false, it retains the state of the board.
+bool Board::valid_move(char start_file, int start_rank, char end_file, int end_rank, 
+                       Piece *promote_to, bool modify_board) {
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
 
+    // if you're not touching your own piece.
     if (start_piece->getColour() != whose_turn) {
         return false;
     }
 
+    // if the move is valid according to piece rules, you check if you're not getting yourself into check.
     if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) { 
 
-        // castling stuff
-        int castleRank = 0;
-        bool kingside = false;
-        bool queenside = false;
-
+        // if you're trying to initialte castling, the piece moving and check checking is self-contained in here
         if (start_piece->getType() == typeKing && 2 == abs(end_file - start_file)) {
+            int castleRank = 0;
+            bool kingside = false;
+            bool queenside = false;
+
             if (whose_turn == White) {
                 castleRank = 1;
                 kingside = white_castle_kingside;
@@ -418,15 +401,21 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank, P
             }
 
             if (!inCheck()) { // king must not be in check
-                // the two move classics check if king does not walk into check while castling
-                if (move_classic(start_file, start_rank, mid_file, end_rank)) {
-                    if (move_classic(mid_file, start_rank, end_file, end_rank)) {
-                        // rook swap
-                        std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
-                        after_move_housekeeping();
+                // the two move_checks check if king does not walk into check while castling
+                if (move_check(start_file, start_rank, mid_file, end_rank, true)) {
+                    if (move_check(mid_file, start_rank, end_file, end_rank, true)) {
+                        if (modify_board) {
+                            // if you want to permanently change the board, rook swap
+                            std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
+                            after_move_housekeeping();
+                        } else {
+                            // if you don't, you put back the king.
+                            move_check(end_file, end_rank, start_file, start_rank, true);
+                        }
                         return true;
                     } else {
-                        move_classic(mid_file, end_rank, start_file, start_rank);
+                        // if you do, you put back the king.
+                        move_check(mid_file, end_rank, start_file, start_rank, true);
                     }
                 }
             }
@@ -436,12 +425,14 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank, P
 
         // en passant stuff    
         bool enPassant = false;
-        bool pawnPromote = false;
         std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
-        std::unique_ptr<Piece> promotedPiece;
+
+        // pawn promotion stuff
+        bool pawnPromote = false;
+        std::unique_ptr<Piece> promotedPiece = promote_to->make_copy();
 
         if (start_piece->getType() == typePawn) {
-            // set en passant square
+            // set en passant-able square
             if (end_rank - start_rank == 2 && end_file == start_file) {
                 en_passant_file = start_file;
                 en_passant_rank = (start_rank + end_rank) / 2;
@@ -455,40 +446,51 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank, P
 
             // pawn promotion
             if (end_rank == 8) {
-                if (promote_to->getType() == typeEmpty || promote_to->getType() == typePawn) {
+                if (promotedPiece->getType() == typeEmpty || promotedPiece->getType() == typePawn) {
                     return false;
                 }
-                promotedPiece = promote_to->make_copy();
                 pawnPromote = true;
             }
         }
 
-        // if it's not castling (no custom "moving"), and even in en passant, we just move
-        bool is_valid = move_classic(start_file, start_rank, end_file, end_rank);
+        // regardless of en passant or pawn promotion, from line 473 - 488
+        // this is the default way to check if your move is valid or not.
+        bool no_check = move_check(start_file, start_rank, end_file, end_rank, modify_board);
 
-        if (is_valid) {
+        if (no_check && modify_board) {
             if (pawnPromote) {
                 getPointerAt(end_file, end_rank) = std::move(promotedPiece);
             }
             after_move_housekeeping();
-            return true;
         } else {
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
             }
-            return false;
         }
+
+        return no_check;
+
     } else {
         return false;
     }
 }
 
-bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to) {
+    return valid_move(start_file, start_rank, end_file, end_rank, promote_to, true);
+}
+
+// If modify_board is false, it retains the state of the board.
+bool Board::valid_move(char start_file, int start_rank, char end_file, int end_rank, bool modify_board) {
     Empty empty_square{};
-    return move(start_file, start_rank, end_file, end_rank, &empty_square);
+    return valid_move(start_file, start_rank, end_file, end_rank, &empty_square, modify_board);
+}
+
+bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
+    return valid_move(start_file, start_rank, end_file, end_rank, true);
 }
 
 bool Board::possibleMoveExists() {
+    // bool valid_move_exists = false; // debugging
     for (char i = 'a'; i <= 'h'; i++) {
         for (int j = 1; j <= 8; j++){
             auto piece = getPieceAt(i, j);
@@ -496,42 +498,50 @@ bool Board::possibleMoveExists() {
                 if(piece->getColour() == whose_turn){
                     for(char k = 'a'; k <= 'h'; k++){
                         for(int l = 1; l <= 8; l++){
-                            if(piece->isValidMove(j, i, l, k, *this)){
-                                // Moving to check for check
-                                int sridx = fileToRow(i);
-                                int scidx = rankToCol(j);
-                                int eridx = fileToRow(k);
-                                int ecidx = rankToCol(l);
+                            if (valid_move(i, j, k, l, false)) {
+                                // TODO: Does not check if pawn promotion is legal or not, so work on it.
 
-                                std::unique_ptr<Piece> temp = std::make_unique<Empty>();
-
-                                std::swap(board[sridx][scidx], board[eridx][ecidx]);
-                                std::swap(temp, board[sridx][scidx]);
-
-                                bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
-                                Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
-
-                                if (isEnpassantMove) {
-                                    board[eridx][scidx] = std::make_unique<Empty>(); // setPieceAt coult be used here
-                                }
-                                bool check = inCheck();
-                                
-                                // Undoing the moves
-                                std::swap(temp, board[sridx][scidx]);
-                                std::swap(board[sridx][scidx], board[eridx][ecidx]);
-                                if (isEnpassantMove) {
-                                    board[sridx][ecidx] = std::make_unique<Pawn>(next_turn);
-                                }
-                                if(!check){
-                                    return true;
-                                }
+                                // valid_move_exists = true; // debugging
+                                // cout << "Possible move: " << i << j << " " << k << l << endl; // debugging
+                                return true;
                             }
+                            // if(piece->isValidMove(j, i, l, k, *this)){
+                            //     // Moving to check for check
+                            //     int sridx = fileToRow(i);
+                            //     int scidx = rankToCol(j);
+                            //     int eridx = fileToRow(k);
+                            //     int ecidx = rankToCol(l);
+
+                            //     std::unique_ptr<Piece> temp = std::make_unique<Empty>();
+
+                            //     std::swap(board[sridx][scidx], board[eridx][ecidx]);
+                            //     std::swap(temp, board[sridx][scidx]);
+
+                            //     bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
+                            //     Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
+
+                            //     if (isEnpassantMove) {
+                            //         board[eridx][scidx] = std::make_unique<Empty>(); // setPieceAt coult be used here
+                            //     }
+                            //     bool check = inCheck();
+                                
+                            //     // Undoing the moves
+                            //     std::swap(temp, board[sridx][scidx]);
+                            //     std::swap(board[sridx][scidx], board[eridx][ecidx]);
+                            //     if (isEnpassantMove) {
+                            //         board[sridx][ecidx] = std::make_unique<Pawn>(next_turn);
+                            //     }
+                            //     if(!check){
+                            //         return true;
+                            //     }
+                            // }
                         }
                     }
                 }
             }
         }
     }
+    // return valid_move_exists; // debugging
     return false;
 }
 
