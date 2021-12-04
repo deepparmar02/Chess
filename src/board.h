@@ -94,10 +94,12 @@ class Board {
         int en_passant_rank;
 
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
-        bool isValidMove(char start_file, int start_rank, char end_file, int end_rank);
+        // bool isValidMove();
         void resetEnPassant();
         void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
         void checkCastling();
+        bool move_classic(char start_file, int start_rank, char end_file, int end_rank);
+        void after_move_housekeeping();
 
         // for now, we use friend. breaks encapsulation but easy to write and test
         friend class Pawn;

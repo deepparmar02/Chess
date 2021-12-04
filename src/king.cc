@@ -19,20 +19,7 @@ bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
     }
     int changeRow = endRow - startRow;
     int changeCol = endCol - startCol;
-
-    // if(changeCol == -1 || changeCol == 1){
-    //     if(changeRow == 1 || changeRow == -1){
-    //         return true;
-    //     }else if(changeRow == 0){
-    //         return true;
-    //     }
-    // }else if(changeCol == 0){
-    //     if(changeRow == 1 || changeRow == -1){
-    //         return true;
-    //     }
-    // }
-    // return false;
-
+    
     // king should not stay put
     if (changeRow == 0 && changeCol == 0) {
         return false;

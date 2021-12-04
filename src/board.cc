@@ -13,6 +13,19 @@ using namespace std;
 
 const int NUM_OF_SQUARES_PER_SIDE = 8;
 
+// TEMPORARY CONSTANTS
+auto const White = Piece::PieceColour::White;
+auto const Black = Piece::PieceColour::Black;
+
+auto const typeEmpty = Piece::PieceType::Empty;
+auto const typePawn = Piece::PieceType::Pawn;
+auto const typeKnight = Piece::PieceType::Knight;
+auto const typeBishop = Piece::PieceType::Bishop;
+auto const typeRook = Piece::PieceType::Rook;
+auto const typeQueen = Piece::PieceType::Queen;
+auto const typeKing = Piece::PieceType::King;
+
+
 int fileToRow(char c) {
     if ('a' <= c && c <= 'h') {
         return c - 'a';
@@ -271,17 +284,57 @@ void Board::checkCastling() {
 
 }
 
+bool Board::move_classic(char start_file, int start_rank, char end_file, int end_rank) {
+    std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
+    std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
+
+    if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
+        std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
+        std::swap(start_piece, end_piece);
+        std::swap(start_piece, capturedPiece);
+
+        if (inCheck()) {
+            std::swap(start_piece, capturedPiece);
+            std::swap(start_piece, end_piece);
+            // resetEnPassant();
+            // checkCastling();
+            return false;
+        } else {
+            // checkCastling();
+            return true;
+        }
+    } else {
+        return false;
+    }
+}
+
+void Board::after_move_housekeeping() {
+    int rank_by_colour;
+    if (whose_turn == White) {
+        // black's en passant square from last turn
+        // is in rank 6, so reset when it's black's turn
+        whose_turn = Black;
+        rank_by_colour = 6;
+    } else {
+        // white's en passant square from last turn 
+        // is in rank 3, so reset when it's white's turn
+        whose_turn = White;
+        rank_by_colour = 3;
+    }
+
+    // reason why we have this if statement is because
+    // if white just made 2-square pawn move, then en_passant_rank == 3;
+    // if black just made 2-square pawn move, then en_passant_rank == 6;
+    // when we switch turns to black, we don't just reset every time we move
+    // we only reset when opponent turn passes, hence this if statement.
+    if (en_passant_rank == rank_by_colour) {
+        resetEnPassant();
+    }
+    checkCastling();
+}
+
 /* MOVE FUNCTION */
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
-    // constants for pawn, king and rook, so I don't have to type.
-    auto typePawn = Piece::PieceType::Pawn;
-    auto typeKing = Piece::PieceType::King;
-    auto typeRook = Piece::PieceType::Rook;
-
-    // colour constants
-    auto White = Piece::PieceColour::White;
-    auto Black = Piece::PieceColour::Black;
-
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
     std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
 
@@ -289,17 +342,14 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
         return false;
     }
 
-    // for castling, King piece must check if it's possible
-    if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) {
-        std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
-        std::swap(start_piece, end_piece);
-        std::swap(start_piece, capturedPiece);
+    if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) { 
 
+        // castling stuff
         int castleRank = 0;
         bool kingside = false;
         bool queenside = false;
-        
-        if (end_piece->getType() == typeKing && 2 == abs(end_file - start_file)) {
+
+        if (start_piece->getType() == typeKing && 2 == abs(end_file - start_file)) {
             // TODO: Check if King is not in check when moving to any of the 
             if (whose_turn == White) {
                 castleRank = 1;
@@ -311,21 +361,41 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
                 queenside = black_castle_queenside;
             }
 
+            char mid_file = (end_file + start_file) / 2;
+            char rook_start;
+            char rook_end;
+
             if (2 == end_file - start_file && kingside) {
-                // kingside castle
-                std::swap(getPointerAt('h', castleRank), getPointerAt('f', castleRank));
-                kingside = true;
+                // kingside castle (note start_rank == end_rank) 
+                rook_start = 'h';
+                rook_end = 'f';
             } else if (-2 == end_file - start_file && queenside) {
                 // queenside castle
-                std::swap(getPointerAt('a', castleRank), getPointerAt('d', castleRank));
-                queenside = true;
-            } 
+                rook_start = 'a';
+                rook_end = 'd';
+            } else {
+                return false;
+            }
+
+            if (move_classic(start_file, start_rank, mid_file, end_rank)) {
+                if (move_classic(mid_file, start_rank, end_file, end_rank)) {
+                    // rook swap
+                    std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
+                    after_move_housekeeping();
+                    return true;
+                } else {
+                    move_classic(mid_file, end_rank, start_file, start_rank);
+                }
+            }
+
+            return false;
         }
-        
+
+        // en passant stuff    
         bool enPassant = false;
         std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
 
-        if (end_piece->getType() == typePawn) {
+        if (start_piece->getType() == typePawn) {
             // set en passant square
             if (end_rank - start_rank == 2 && end_file == start_file) {
                 en_passant_file = start_file;
@@ -346,41 +416,17 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
             // }
         }
 
-        if (inCheck()) {
+        // if it's not castling (no custom "moving"), and even in en passant, we just move
+        bool is_valid = move_classic(start_file, start_rank, end_file, end_rank);
+
+        if (is_valid) {
+            after_move_housekeeping();
+            return true;
+        } else {
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
             }
-            if (kingside) {
-                std::swap(getPointerAt('h', castleRank), getPointerAt('f', castleRank));
-            }
-            if (queenside) {
-                std::swap(getPointerAt('a', castleRank), getPointerAt('d', castleRank));
-            }
-            std::swap(start_piece, capturedPiece);
-            std::swap(start_piece, end_piece);
-            resetEnPassant();
-            // checkCastling();
             return false;
-        } else {
-            if (whose_turn == White) {
-                whose_turn = Black;
-                // black's en passant square from last turn
-                // is in rank 6, so reset when it's black's turn
-                if (en_passant_rank == 6) {
-                    resetEnPassant();
-                }
-            } else {
-                whose_turn = White;
-                // white's en passant square from last turn 
-                // is in rank 3, so reset when it's white's turn
-                if (en_passant_rank == 3) {
-                    resetEnPassant();
-                }
-            }
-
-            checkCastling();
-            
-            return true;
         }
     } else {
         return false;

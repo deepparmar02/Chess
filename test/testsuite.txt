@@ -6,3 +6,4 @@ foolsMate
 twoMoveCheckmate
 scholarsMate
 kingsIndian
+castlingcheck
