@@ -367,10 +367,14 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
 
     // if the move is valid according to piece rules, you check if you're not getting yourself into check.
     if (start_piece->isValidMove(start_rank, start_file, end_rank, end_file, *this)) { 
-
-        // if you're trying to initialte castling, the piece moving and check checking is self-contained in here
+        
+        // castling stuff
+        bool castling = false;
+        char mid_file = (end_file + start_file) / 2;
+        int castleRank = 0;
+        char rook_start;
+        char rook_end;
         if (start_piece->getType() == typeKing && 2 == abs(end_file - start_file)) {
-            int castleRank = 0;
             bool kingside = false;
             bool queenside = false;
 
@@ -384,10 +388,6 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
                 queenside = black_castle_queenside;
             }
 
-            char mid_file = (end_file + start_file) / 2;
-            char rook_start;
-            char rook_end;
-
             if (2 == end_file - start_file && kingside) {
                 // kingside castle (note start_rank == end_rank) 
                 rook_start = 'h';
@@ -400,27 +400,10 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
                 return false;
             }
 
-            if (!inCheck()) { // king must not be in check
-                // the two move_checks check if king does not walk into check while castling
-                if (move_check(start_file, start_rank, mid_file, end_rank, true)) {
-                    if (move_check(mid_file, start_rank, end_file, end_rank, true)) {
-                        if (modify_board) {
-                            // if you want to permanently change the board, rook swap
-                            std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
-                            after_move_housekeeping();
-                        } else {
-                            // if you don't, you put back the king.
-                            move_check(end_file, end_rank, start_file, start_rank, true);
-                        }
-                        return true;
-                    } else {
-                        // if you do, you put back the king.
-                        move_check(mid_file, end_rank, start_file, start_rank, true);
-                    }
-                }
-            }
-
-            return false;
+            // king must not be in check and first intermediate square also does not get you in check
+            // we have retained our original board setup. We will also check for the final square 
+            castling = !inCheck() && move_check(start_file, start_rank, mid_file, end_rank, 
+                                                modify_board=false);
         }
 
         // en passant stuff    
@@ -453,16 +436,22 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             }
         }
 
-        // regardless of en passant or pawn promotion, from line 473 - 488
+        // regardless of en passant or pawn promotion or castling, from line 473 - 488
         // this is the default way to check if your move is valid or not.
         bool no_check = move_check(start_file, start_rank, end_file, end_rank, modify_board);
 
         if (no_check && modify_board) {
+            // you promote to a new piece
             if (pawnPromote) {
                 getPointerAt(end_file, end_rank) = std::move(promotedPiece);
             }
+            // you move the rook to finish castling
+            if (castling) {
+                std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
+            }
             after_move_housekeeping();
         } else {
+            // if you don't change the board or move is invalid, you put the en passant'ed pawn back
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
             }
