@@ -30,7 +30,7 @@ int fileToRow(char c) {
     if ('a' <= c && c <= 'h') {
         return c - 'a';
     } else {
-        throw;
+        throw std::out_of_range{"Invalid file."};
     }
 }
 
@@ -38,14 +38,8 @@ int rankToCol(int i) {
     if (1 <= i && i <= 8) {
         return i - 1;
     } else {
-        throw;
+        throw std::out_of_range{"Invalid rank."};
     }
-}
-
-std::pair<int, int> getIndexes(char file, int rank) {
-    int rowidx = fileToRow(file);
-    int colidx = rankToCol(rank);
-    return std::make_pair(rowidx, colidx);
 }
 
 std::unique_ptr<Piece> & Board::getPointerAt(char file, int rank) {
@@ -101,16 +95,14 @@ void Board::defaultSetup() {
 
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
-        board[fileToRow(c)][rankToCol(2)] = std::make_unique<Pawn>(Piece::PieceColour::White);
-        board[fileToRow(c)][rankToCol(7)] = std::make_unique<Pawn>(Piece::PieceColour::Black);
+        getPointerAt(c, 2) = std::make_unique<Pawn>(Piece::PieceColour::White);
+        getPointerAt(c, 7) = std::make_unique<Pawn>(Piece::PieceColour::Black);
     }
 
     // empty setup
     for (char d = 'a'; d <= 'h'; ++d) {
         for (char r = 3; r <= 6; ++r) {
-            int ridx = fileToRow(d);
-            int cidx = rankToCol(r);
-            board[ridx][cidx] = std::make_unique<Empty>();
+            getPointerAt(d, r) = std::make_unique<Empty>();
         }
     }
 
@@ -122,14 +114,14 @@ void Board::defaultSetup() {
         } else {
             colour = Piece::PieceColour::Black;
         }
-        board[fileToRow('a')][rankToCol(i)] = std::make_unique<Rook>(colour);
-        board[fileToRow('b')][rankToCol(i)] = std::make_unique<Knight>(colour);
-        board[fileToRow('c')][rankToCol(i)] = std::make_unique<Bishop>(colour);
-        board[fileToRow('d')][rankToCol(i)] = std::make_unique<Queen>(colour);
-        board[fileToRow('e')][rankToCol(i)] = std::make_unique<King>(colour);
-        board[fileToRow('f')][rankToCol(i)] = std::make_unique<Bishop>(colour);
-        board[fileToRow('g')][rankToCol(i)] = std::make_unique<Knight>(colour);
-        board[fileToRow('h')][rankToCol(i)] = std::make_unique<Rook>(colour);
+        getPointerAt('a', i) = std::make_unique<Rook>(colour);
+        getPointerAt('b', i) = std::make_unique<Knight>(colour);
+        getPointerAt('c', i) = std::make_unique<Bishop>(colour);
+        getPointerAt('d', i) = std::make_unique<Queen>(colour);
+        getPointerAt('e', i) = std::make_unique<King>(colour);
+        getPointerAt('f', i) = std::make_unique<Bishop>(colour);
+        getPointerAt('g', i) = std::make_unique<Knight>(colour);
+        getPointerAt('h', i) = std::make_unique<Rook>(colour);
     }
 }
 
@@ -214,7 +206,7 @@ Board & Board::operator=(Board &&other) {
 
 void Board::setPieceAt(char file, int rank, Piece *piece) {
     auto newPiece = piece->make_copy();
-    std::swap(newPiece, board[fileToRow(file)][rankToCol(rank)]);
+    std::swap(newPiece, getPointerAt(file, rank));
 }
 
 bool Board::inCheck() {
@@ -276,10 +268,6 @@ void Board::setCastlingState(char file, int rank, Piece::PieceType type, bool &c
 }
 
 void Board::checkCastling() {
-    // constants for pawn, king and rook, so I don't have to type.
-    auto typeKing = Piece::PieceType::King;
-    auto typeRook = Piece::PieceType::Rook;
-
     // if white king has moved, even when it moved back, it lost the ability to castle
     setCastlingState('e',1, typeKing, white_castle_kingside);
     setCastlingState('e',1, typeKing, white_castle_queenside);
@@ -296,7 +284,6 @@ void Board::checkCastling() {
     setCastlingState('a',8, typeRook, black_castle_queenside);
     // black king-side rook
     setCastlingState('h',8, typeRook, black_castle_kingside);
-
 }
 
 /**
@@ -400,10 +387,12 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
                 return false;
             }
 
-            // king must not be in check and first intermediate square also does not get you in check
-            // we have retained our original board setup. We will also check for the final square 
-            castling = !inCheck() && move_check(start_file, start_rank, mid_file, end_rank, 
-                                                modify_board=false);
+            // King must not be in check and first intermediate square also does not get you in check.
+            // We will move the king for real if modify_board == true later, if castling is true.
+            castling = !inCheck() && move_check(start_file, start_rank, mid_file, end_rank, false);
+            if (!castling) {
+                return false;
+            }
         }
 
         // en passant stuff    
