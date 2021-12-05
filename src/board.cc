@@ -387,8 +387,11 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
                 return false;
             }
 
-            // King must not be in check and first intermediate square also does not get you in check.
-            // We will move the king for real if modify_board == true later, if castling is true.
+            // king must not be in check and moving to first intermediate square 
+            // also does not get you in check.
+            // If that is satisfied, we will move the king down 
+            // at line 430 for real (if modify_board is true). 
+            // Else, we don't move and it's false.
             castling = !inCheck() && move_check(start_file, start_rank, mid_file, end_rank, false);
             if (!castling) {
                 return false;
