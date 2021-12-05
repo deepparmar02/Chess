@@ -72,7 +72,7 @@ Board::Board() :
     black_castle_kingside{false},
     black_castle_queenside{false},
     en_passant_file{'\0'},
-    en_passant_rank{'\0'}
+    en_passant_rank{0}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -444,8 +444,10 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             after_move_housekeeping();
         } else {
             // if you don't change the board or move is invalid, you put the en passant'ed pawn back
+            // and you reset the square to 0.
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+                resetEnPassant();
             }
         }
 
