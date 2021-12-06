@@ -10,8 +10,6 @@ class Piece;
 // Note the British/Canadian spelling of Color, not American Color
 // enum PieceColour {White, Black, NoColour};
 
-// TODO: Add initialize function or something
-
 class Board {
     public:
         // Construct a new Board object. It creates an empty board.
@@ -40,16 +38,7 @@ class Board {
          */
         // bool move(Move &given_move);
         bool move(char start_file, int start_rank, char end_file, int end_rank);
-
-        /**
-         * allPossibleMoves returns an array of valid moves
-         * 
-         * for now, we store a vector of ints, as dummy type.
-         * We'll decide which class or type to use later.
-         * 
-         * @return std::vector<int> 
-         */
-        std::vector<int> allPossibleMoves();
+        bool move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to);
 
         /* GAME STATE METHODS */
         // possibleMoveExists checks if current player can make any move or not.
@@ -117,9 +106,6 @@ class Board {
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
-
-        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
-
         bool isCheckmate;
         bool isStalemate;
 
@@ -137,14 +123,19 @@ class Board {
         char en_passant_file;
         int en_passant_rank;
 
-        // std::unique_ptr<Piece> & getPointerAt(char file, int rank);
-        bool isValidMove(char start_file, int start_rank, char end_file, int end_rank);
+        std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         void resetEnPassant();
         void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
         void checkCastling();
+        bool move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
+        bool valid_move(char start_file, int start_rank, char end_file, int end_rank, 
+                        Piece *promote_to, bool modify_board);
+        bool valid_move(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
+        void after_move_housekeeping();
 
+        // for now, we use friend. breaks encapsulation but easy to write and test
         friend class Pawn;
-        // Knight, Bishop, Rook, Queen, King;
+        friend class King;
 };
 
 #endif

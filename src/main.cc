@@ -42,7 +42,7 @@ int main() {
             if(board.whose_turn == Piece::PieceColour::White){
                 cout << "Black ";
             }else{
-                cout << "White "
+                cout << "White ";
             }
             cout << "wins!" << endl;
         }

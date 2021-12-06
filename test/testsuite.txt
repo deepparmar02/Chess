@@ -5,4 +5,7 @@ fastestStalemate
 foolsMate
 twoMoveCheckmate
 scholarsMate
+kingsIndian
+castlingcheck
+all_pieces_stalemate
 setup
