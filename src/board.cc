@@ -398,6 +398,11 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             }
         }
 
+        // two-square pawn move stuff
+        bool pawnTwoSqaures = false;
+        char future_en_passant_file;
+        int future_en_passant_rank;
+
         // en passant stuff    
         bool enPassant = false;
         std::unique_ptr<Piece> enPassantTemp = std::make_unique<Empty>();
@@ -409,8 +414,9 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
         if (start_piece->getType() == typePawn) {
             // set en passant-able square
             if (end_rank - start_rank == 2 && end_file == start_file) {
-                en_passant_file = start_file;
-                en_passant_rank = (start_rank + end_rank) / 2;
+                future_en_passant_file = start_file;
+                future_en_passant_rank = (start_rank + end_rank) / 2;
+                pawnTwoSqaures = true;
             }
 
             // en passant
@@ -441,12 +447,20 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             if (castling) {
                 std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
             }
+            // if two-square pawn move is sucessful, you set future enpassant square
+            if (pawnTwoSqaures) {
+                en_passant_file = future_en_passant_file;
+                en_passant_rank = future_en_passant_rank;
+            }
             after_move_housekeeping();
         } else {
             // if you don't change the board or move is invalid, you put the en passant'ed pawn back
             // and you reset the square to 0.
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
+            }
+            // if two-square pawn move is unsucessful, you reset
+            if (pawnTwoSqaures) {
                 resetEnPassant();
             }
         }
