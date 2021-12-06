@@ -105,6 +105,9 @@ class Board {
         // resetBoard goes back to default setup
         void resetBoard();
 
+        // resign concedes the game to the opponent
+        void resign();
+
         // winner returns the colour of the winner
         // Piece::PieceColour winner();
 

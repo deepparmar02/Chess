@@ -34,8 +34,17 @@ int main() {
             board.setGameRunning();
         }
         else if (command == "resign") {
-            // reinitialize board/destroy board
-            // update scoreboard
+            if (!board.isGameRunning()) {
+                cout << "Game is currently not running." << endl;
+                continue;
+            }
+            board.resign();
+            if(board.whose_turn == Piece::PieceColour::White){
+                cout << "Black ";
+            }else{
+                cout << "White "
+            }
+            cout << "wins!" << endl;
         }
         else if (command == "move") {
             if (!board.isGameRunning()) {

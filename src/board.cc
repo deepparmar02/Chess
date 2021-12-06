@@ -410,6 +410,11 @@ void Board::isGameOver() {
     }
 }
 
+void Board::resign(){
+    isInGame = false;
+    enteredSetupMode = false;
+}
+
 bool Board::isTwoKings() {
     int whiteKings = 0;
     int blackKings = 0;
