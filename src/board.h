@@ -29,7 +29,7 @@ class Board {
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
-        void setPieceAt(char file, int rank, Piece *piece);
+        void setPieceAt(char file, int rank, std::unique_ptr<Piece> piece);
 
         /**
          * move takes in the start and end squares, returns if it is
@@ -55,10 +55,47 @@ class Board {
         // ie, king isn't in check but can't make any valid moves
         bool inStalemate();
 
+        // isGameOver checks if player is in checkmate or stalemate
+        // which means game cannot be continued
         void isGameOver();
+
+        // isTwoKings checks if there are exactly 1 white king 
+        // and 1 black king
+        bool isTwoKings(); 
+
+        // isPawnLastRow checks if there are no pawns in the last rows
+        bool isPawnLastRow();
+
+        // enterSetupMode indicates that player entered setup mode
+        void enterSetupMode();
+
+        // endSetupMode checks if setup mode could be exited
+        // conditions: 2 kings (1 White, 1 Black), no pawns on last row, no king is in check
+        bool endSetupMode();
+
+        // enteredSetupMode checks if player entered setup mode
+        bool isCustomBoard();
+
+        // setGameRunning sets isInGame to true
+        void setGameRunning();
+
+        // isGameRunning returns whether game is running
+        bool isGameRunning();
+
+        // addPiece adds the piece at (file, rank)
+        void addPiece(char file, int rank, char piece);
+
+        // deletePiece deletes piece at (file, rank)
+        void deletePiece(char file, int rank);
+
+        // changeColour makes it 'colour's' turn to go next
+        void changeColour(std::string colour);
 
         // resetBoard goes back to default setup
         void resetBoard();
+
+        // resign concedes the game to the opponent
+        void resign();
 
         // winner returns the colour of the winner
         // Piece::PieceColour winner();
@@ -71,6 +108,10 @@ class Board {
         std::unique_ptr<Piece> board[8][8];
         bool isCheckmate;
         bool isStalemate;
+
+        bool enteredSetupMode;
+        bool isInGame;
+
         // FUTURE FIELDS THAT MIGHT COME USEFUL
         // std::pair<char, int> white_king;
         // std::pair<char, int> black_king;

@@ -9,7 +9,8 @@ int main() {
     // cout << "here" << endl;
     Board board{};
     cout << board << endl;
-    board.defaultSetup();
+
+    
     cout << board << endl;
     string command;
     while (cin >> command) {
@@ -26,15 +27,30 @@ int main() {
             ss.clear();
             ss.str(blackPlayer);
             if (ss >> blackPlayerLevel) cout << "Player 2 is Computer of level " << blackPlayerLevel << endl;
-        
 
-            // initialize board and start game
+            if (!board.isCustomBoard()) {
+                board.defaultSetup();
+            }
+            board.setGameRunning();
         }
         else if (command == "resign") {
-            // reinitialize board/destroy board
-            // update scoreboard
+            if (!board.isGameRunning()) {
+                cout << "Game is currently not running." << endl;
+                continue;
+            }
+            board.resign();
+            if(board.whose_turn == Piece::PieceColour::White){
+                cout << "Black ";
+            }else{
+                cout << "White ";
+            }
+            cout << "wins!" << endl;
         }
         else if (command == "move") {
+            if (!board.isGameRunning()) {
+                cout << "Game is currently not running." << endl;
+                continue;
+            }
             string s;
             getline(cin, s);  // read rest of line from input
             istringstream ss{s};
@@ -98,22 +114,42 @@ int main() {
                 }
             }
         }
-        else if (command == "setup") {
+        else if (command == "setup") { 
+            if (board.isGameRunning()) {
+                cout << "Game is currently running." << endl;
+                continue;
+            }
+            board.enterSetupMode();
             string setupCmd;
             while (cin >> setupCmd) {
                 if (setupCmd == "+") {
                     char piece, col;
                     int row;
                     cin >> piece >> col >> row;
+
+                    board.addPiece(col, row, piece);
+                    cout << board << endl;
                 }
                 else if (setupCmd == "-") {
                     char col;
                     int row;
                     cin >> col >> row;
+
+                    board.deletePiece(col, row);
+                    cout << board << endl;
+                }
+                else if (setupCmd == "=") {
+                    string colour;
+                    cin >> colour;
+
+                    board.changeColour(colour);
                 }
                 else if (setupCmd == "done") {
                     // check for board validity before quitting
-                    break;
+                    if (board.endSetupMode()) {
+                        break;
+                    } 
+                    cout << "Invalid board" << endl;
                 }
                 else {
                    cerr << "Invalid Command" << endl;

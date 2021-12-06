@@ -54,6 +54,34 @@ Piece *Board::getPieceAt(char file, int rank) const {
     return board[ridx][cidx].get();
 }
 
+std::unique_ptr<Piece> convertToPiece(char piece){
+    if(piece == 'K'){
+        return std::make_unique<King>(Piece::PieceColour::White);
+    }else if(piece == 'P'){
+        return std::make_unique<Pawn>(Piece::PieceColour::White);
+    }else if(piece == 'Q'){
+        return std::make_unique<Queen>(Piece::PieceColour::White);
+    }else if(piece == 'R'){
+        return std::make_unique<Rook>(Piece::PieceColour::White);
+    }else if(piece == 'N'){
+        return std::make_unique<Knight>(Piece::PieceColour::White);
+    }else if(piece == 'B'){
+        return std::make_unique<Bishop>(Piece::PieceColour::White);
+    }else if(piece == 'k'){
+        return std::make_unique<King>(Piece::PieceColour::Black);
+    }else if(piece == 'p'){
+        return std::make_unique<Pawn>(Piece::PieceColour::Black);
+    }else if(piece == 'q'){
+        return std::make_unique<Queen>(Piece::PieceColour::Black);
+    }else if(piece == 'r'){
+        return std::make_unique<Rook>(Piece::PieceColour::Black);
+    }else if(piece == 'n'){
+        return std::make_unique<Knight>(Piece::PieceColour::Black);
+    }else if(piece == 'b'){
+        return std::make_unique<Bishop>(Piece::PieceColour::Black);
+    }
+}
+
 // cleaner alternative to getPieceAt
 Piece *Board::operator() (char col, int row) const {
     return getPieceAt(col, row);
@@ -204,7 +232,7 @@ Board & Board::operator=(Board &&other) {
     return *this;
 }
 
-void Board::setPieceAt(char file, int rank, Piece *piece) {
+void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
     auto newPiece = piece->make_copy();
     std::swap(newPiece, getPointerAt(file, rank));
 }
@@ -229,6 +257,7 @@ bool Board::inCheck() {
                 if (piece->getColour() == whose_turn) {
                     king_file = f;
                     king_rank = r;
+                    break;
                 }
             }
         }
@@ -486,6 +515,7 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     return valid_move(start_file, start_rank, end_file, end_rank, true);
 }
 
+
 bool Board::possibleMoveExists() {
     // bool valid_move_exists = false; // debugging
     for (char i = 'a'; i <= 'h'; i++) {
@@ -558,8 +588,104 @@ void Board::isGameOver() {
         } else {
             isStalemate = true;
         }
+        enteredSetupMode = false;
+        isInGame = false;
     }
 }
+
+void Board::resign(){
+    isInGame = false;
+    enteredSetupMode = false;
+}
+
+bool Board::isTwoKings() {
+    int whiteKings = 0;
+    int blackKings = 0;
+    for(char i = 'a'; i <= 'h'; i++){
+        for(int j = 1; j <= 8; j++){
+            if(getPieceAt(i, j)->getType() == Piece::PieceType::King){
+                if(getPieceAt(i, j)->getColour() == Piece::PieceColour::White){
+                    whiteKings++;
+                }else{
+                    blackKings++;
+                }
+                if(whiteKings > 1 || blackKings > 1){
+                    return false;
+                }
+            }
+        }
+    }
+    if(whiteKings != 1 && blackKings != 1){
+        return false;
+    }
+    return true;
+}
+
+void Board::changeColour(string colour){
+    if(colour == "white"){
+        whose_turn = Piece::PieceColour::White;
+    }else{
+        whose_turn = Piece::PieceColour::Black;
+    }
+}
+
+void Board::addPiece(char file, int rank, char piece){
+    setPieceAt(file, rank, convertToPiece(piece));
+}
+
+void Board::deletePiece(char file, int rank) {
+    setPieceAt(file, rank, std::make_unique<Empty>());
+}
+
+bool Board::isPawnLastRow() {
+    for (int i = 1; i <=  8; i++) {
+        if (getPieceAt('a', i)->getType() == Piece::PieceType::Pawn ||
+            getPieceAt('h', i)->getType() == Piece::PieceType::Pawn) {
+            return true;;
+        }
+    }
+    return false;
+}
+
+void Board::enterSetupMode() {
+    enteredSetupMode = true;
+}
+
+bool Board::isGameRunning(){
+    return isInGame;
+}
+
+void Board::setGameRunning(){
+    isInGame = true;
+}
+
+bool Board::endSetupMode() {
+    if (!isPawnLastRow() && isTwoKings() && !inCheck()) {
+        return true;
+    }
+    return false;
+}
+
+bool Board::isCustomBoard() {
+    return enteredSetupMode;
+}
+
+// bool Board::move(Move &given_move) {
+//     int startRow = given_move.startRow;
+//     int startCol = given_move.startCol;
+//     int endRow = given_move.endRow;
+//     int endCol = given_move.endCol;
+//     return move(startRow, startCol, endRow, endCol);
+// }
+
+// Piece::PieceColour Board::winner() {
+//     return Piece::PieceColour::NoColour;
+//     // if (/* */) {
+//     //     return Piece::PieceColour::White;
+//     // } else {
+//     //     return Piece::PieceColour::Black;
+//     // }
+// }
 
 void Board::resetBoard() {
     defaultSetup();
