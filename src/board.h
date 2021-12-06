@@ -31,7 +31,7 @@ class Board {
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
-        void setPieceAt(char file, int rank, Piece *piece);
+        void setPieceAt(char file, int rank, std::unique_ptr<Piece> piece);
 
         /**
          * move takes in the start and end squares, returns if it is
@@ -77,15 +77,30 @@ class Board {
         // isPawnLastRow checks if there are no pawns in the last rows
         bool isPawnLastRow();
 
+        // enterSetupMode indicates that player entered setup mode
+        void enterSetupMode();
+
         // endSetupMode checks if setup mode could be exited
         // conditions: 2 kings (1 White, 1 Black), no pawns on last row, no king is in check
         bool endSetupMode();
+
+        // enteredSetupMode checks if player entered setup mode
+        bool isCustomBoard();
+
+        // setGameRunning sets isInGame to true
+        void setGameRunning();
+
+        // isGameRunning returns whether game is running
+        bool isGameRunning();
 
         // addPiece adds the piece at (file, rank)
         void addPiece(char file, int rank, char piece);
 
         // deletePiece deletes piece at (file, rank)
         void deletePiece(char file, int rank);
+
+        // changeColour makes it 'colour's' turn to go next
+        void changeColour(std::string colour);
 
         // resetBoard goes back to default setup
         void resetBoard();
@@ -105,6 +120,9 @@ class Board {
         bool isCheckmate;
         bool isStalemate;
 
+        bool enteredSetupMode;
+        bool isInGame;
+
         // FUTURE FIELDS THAT MIGHT COME USEFUL
         // std::pair<char, int> white_king;
         // std::pair<char, int> black_king;
@@ -119,6 +137,8 @@ class Board {
         // std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         bool isValidMove(char start_file, int start_rank, char end_file, int end_rank);
         void resetEnPassant();
+        void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
+        void checkCastling();
 
         friend class Pawn;
         // Knight, Bishop, Rook, Queen, King;

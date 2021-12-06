@@ -5,3 +5,4 @@ fastestStalemate
 foolsMate
 twoMoveCheckmate
 scholarsMate
+setup
