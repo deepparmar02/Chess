@@ -1,0 +1,10 @@
+setup
++ K a1
++ k a2
++ P a3
+= black
+done
+game white black
+move a1 a2
+move a8 a7
+
