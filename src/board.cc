@@ -7,6 +7,7 @@
 #include "rook.h"
 #include "queen.h"
 #include "king.h"
+#include "move.h"
 #include <iostream>
 #include <utility>
 using namespace std;
@@ -80,6 +81,7 @@ std::unique_ptr<Piece> convertToPiece(char piece){
     }else if(piece == 'b'){
         return std::make_unique<Bishop>(Piece::PieceColour::Black);
     }
+    return std::make_unique<Empty>();
 }
 
 // cleaner alternative to getPieceAt
@@ -520,6 +522,10 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
 
 bool Board::possibleMoveExists() {
     // bool valid_move_exists = false; // debugging
+
+    allPossibleMoves.clear();
+    capturingMoves.clear();
+
     for (char i = 'a'; i <= 'h'; i++) {
         for (int j = 1; j <= 8; j++){
             auto piece = getPieceAt(i, j);
@@ -529,10 +535,14 @@ bool Board::possibleMoveExists() {
                         for(int l = 1; l <= 8; l++){
                             if (valid_move(i, j, k, l, false)) {
                                 // TODO: Does not check if pawn promotion is legal or not, so work on it.
-
+                                
+                                allPossibleMoves.emplace_back(i, j, k, l);
+                                if (getPieceAt(k, l)->getType() != typeEmpty) {
+                                    capturingMoves.emplace_back(i, j, k, l);
+                                }
                                 // valid_move_exists = true; // debugging
                                 // cout << "Possible move: " << i << j << " " << k << l << endl; // debugging
-                                return true;
+                        
                             }
                             // if(piece->isValidMove(j, i, l, k, *this)){
                             //     // Moving to check for check
@@ -571,7 +581,7 @@ bool Board::possibleMoveExists() {
         }
     }
     // return valid_move_exists; // debugging
-    return false;
+    return !allPossibleMoves.empty();
 }
 
 bool Board::inCheckmate() {

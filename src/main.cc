@@ -6,12 +6,9 @@
 using namespace std;
 
 int main() {
-    // cout << "here" << endl;
     Board board{};
-    cout << board << endl;
-
-    
     // cout << board << endl;
+    
     string command;
     while (cin >> command) {
         if (command == "game") {
