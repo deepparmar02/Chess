@@ -102,7 +102,9 @@ Board::Board() :
     black_castle_kingside{false},
     black_castle_queenside{false},
     en_passant_file{'\0'},
-    en_passant_rank{0}
+    en_passant_rank{0},
+    score1{0},
+    score2{0}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -166,7 +168,9 @@ Board::Board(const Board &other) :
     black_castle_kingside{other.black_castle_kingside},
     black_castle_queenside{other.black_castle_queenside},
     en_passant_file{other.en_passant_file},
-    en_passant_rank{other.en_passant_rank}
+    en_passant_rank{other.en_passant_rank},
+    score1{other.score1},
+    score2{other.score2}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -590,12 +594,22 @@ void Board::isGameOver() {
         } else {
             isStalemate = true;
         }
+        if(whose_turn == Piece::PieceColour::White){
+            score2++;
+        }else{
+            score1++;
+        }
         enteredSetupMode = false;
         isInGame = false;
     }
 }
 
 void Board::resign(){
+    if(whose_turn == Piece::PieceColour::White){
+        score2++;
+    }else{
+        score1++;
+    }
     isInGame = false;
     enteredSetupMode = false;
 }
