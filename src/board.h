@@ -3,6 +3,7 @@
 #include <memory>
 #include <vector>
 #include "piece.h"
+#include "subject.h"
 class Move;
 class Piece;
 
@@ -10,7 +11,7 @@ class Piece;
 // Note the British/Canadian spelling of Color, not American Color
 // enum PieceColour {White, Black, NoColour};
 
-class Board {
+class Board : public Subject {
     public:
         // Construct a new Board object. It creates an empty board.
         Board();
@@ -41,6 +42,10 @@ class Board {
         bool move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to);
 
         /* GAME STATE METHODS */
+        // TODO: Add allPossibleMoves()
+        std::vector<Move> allPossibleMoves();
+        std::vector<Move> allCapturingMoves();
+
         // possibleMoveExists checks if current player can make any move or not.
         bool possibleMoveExists();
 
@@ -102,6 +107,10 @@ class Board {
 
         // TEMPORARY OUTPUT OPERATOR
         friend std::ostream &operator<<(std::ostream& out, const Board &board);
+
+        // Scores of player 1 and player 2
+        int score1;
+        int score2;
 
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
