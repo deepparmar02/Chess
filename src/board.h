@@ -115,6 +115,9 @@ class Board : public Subject {
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
+        std::vector<Move> allPossibleMoves;
+        std::vector<Move> capturingMoves;
+
         bool isCheckmate;
         bool isStalemate;
 
