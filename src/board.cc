@@ -95,6 +95,8 @@ Board::Board() :
     whose_turn{Piece::PieceColour::White},
     isCheckmate{false},
     isStalemate{false},
+    enteredSetupMode{false},
+    isInGame{false},
     white_castle_kingside{false},
     white_castle_queenside{false},
     black_castle_kingside{false},

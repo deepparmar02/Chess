@@ -11,7 +11,7 @@ int main() {
     cout << board << endl;
 
     
-    cout << board << endl;
+    // cout << board << endl;
     string command;
     while (cin >> command) {
         if (command == "game") {
