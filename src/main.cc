@@ -3,15 +3,15 @@
 #include <string>
 #include <sstream>
 #include "board.h"
+#include "textdisplay.h"
 using namespace std;
 
 int main() {
-    // cout << "here" << endl;
     Board board{};
-    cout << board << endl;
 
-    
-    // cout << board << endl;
+    TextDisplay text{&board};
+    // board.notifyObservers();
+
     string command;
     while (cin >> command) {
         if (command == "game") {
@@ -32,6 +32,7 @@ int main() {
                 board.defaultSetup();
             }
             board.setGameRunning();
+            board.notifyObservers();
         }
         else if (command == "resign") {
             if (!board.isGameRunning()) {
@@ -89,7 +90,8 @@ int main() {
             } else {
                 valid_move = board.move(cols[0], rows[0], cols[1], rows[1]);
             }
-            cout << board << endl;
+            // cout << board << endl;
+            board.notifyObservers();
 
             if (valid_move) {
                 if (board.inCheckmate()) {
@@ -128,7 +130,7 @@ int main() {
                     cin >> piece >> col >> row;
 
                     board.addPiece(col, row, piece);
-                    cout << board << endl;
+                    board.notifyObservers();
                 }
                 else if (setupCmd == "-") {
                     char col;
@@ -136,7 +138,7 @@ int main() {
                     cin >> col >> row;
 
                     board.deletePiece(col, row);
-                    cout << board << endl;
+                    board.notifyObservers();
                 }
                 else if (setupCmd == "=") {
                     string colour;
