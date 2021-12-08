@@ -4,7 +4,8 @@
 #include <vector>
 #include "piece.h"
 #include "subject.h"
-class Move;
+//class Move;
+#include "move.h"
 class Piece;
 
 // Types of colours for chessboard. 
@@ -40,11 +41,11 @@ class Board : public Subject {
         // bool move(Move &given_move);
         bool move(char start_file, int start_rank, char end_file, int end_rank);
         bool move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to);
+        bool move(Move &move);
 
         /* GAME STATE METHODS */
-        // TODO: Add allPossibleMoves()
-        std::vector<Move> allPossibleMoves();
-        std::vector<Move> allCapturingMoves();
+        std::vector<Move> getAllPossibleMoves();
+        std::vector<Move> getAllCapturingMoves();
 
         // possibleMoveExists checks if current player can make any move or not.
         bool possibleMoveExists();
@@ -115,8 +116,6 @@ class Board : public Subject {
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
-        std::vector<Move> allPossibleMoves;
-        std::vector<Move> capturingMoves;
 
         bool isCheckmate;
         bool isStalemate;
@@ -124,16 +123,18 @@ class Board : public Subject {
         bool enteredSetupMode;
         bool isInGame;
 
-        // FUTURE FIELDS THAT MIGHT COME USEFUL
-        // std::pair<char, int> white_king;
-        // std::pair<char, int> black_king;
+        // Castling fields
         bool white_castle_kingside;
         bool white_castle_queenside;
         bool black_castle_kingside;
         bool black_castle_queenside;
+
         // Keep track of en passant.
         char en_passant_file;
         int en_passant_rank;
+
+        std::vector<Move> allPossibleMoves;
+        std::vector<Move> capturingMoves;
 
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         void resetEnPassant();

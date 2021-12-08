@@ -94,6 +94,8 @@ Piece *Board::operator() (char col, int row) const {
 // The internal board setup is that white pieces are on the left, black on the right.
 // a1 is [0][0], etc. up tp h8 which is [7][7]
 Board::Board() : 
+    score1{0},
+    score2{0},
     whose_turn{Piece::PieceColour::White},
     isCheckmate{false},
     isStalemate{false},
@@ -105,8 +107,8 @@ Board::Board() :
     black_castle_queenside{false},
     en_passant_file{'\0'},
     en_passant_rank{0},
-    score1{0},
-    score2{0}
+    allPossibleMoves{std::vector<Move>{}},
+    capturingMoves{std::vector<Move>{}}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -117,6 +119,8 @@ Board::Board() :
 
 void Board::defaultSetup() {
     //default state values
+    score1 = 0;
+    score2 = 0;
     whose_turn = Piece::PieceColour::White;
     en_passant_file = '\0';
     en_passant_rank = 0;
@@ -162,6 +166,8 @@ void Board::defaultSetup() {
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
 Board::Board(const Board &other) : 
+    score1{other.score1},
+    score2{other.score2},
     whose_turn{other.whose_turn},
     isCheckmate{other.isCheckmate},
     isStalemate{other.isStalemate},
@@ -171,8 +177,8 @@ Board::Board(const Board &other) :
     black_castle_queenside{other.black_castle_queenside},
     en_passant_file{other.en_passant_file},
     en_passant_rank{other.en_passant_rank},
-    score1{other.score1},
-    score2{other.score2}
+    allPossibleMoves{other.allPossibleMoves},
+    capturingMoves{other.capturingMoves}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -192,6 +198,8 @@ Board & Board::operator=(const Board &other) {
         black_castle_queenside = other.black_castle_queenside;
         en_passant_file = other.en_passant_file;
         en_passant_rank = other.en_passant_rank;
+        allPossibleMoves = other.allPossibleMoves;
+        capturingMoves = other.capturingMoves;
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
             for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
                 std::unique_ptr<Piece> newPiece = other.board[r][c]->make_copy();
@@ -202,7 +210,12 @@ Board & Board::operator=(const Board &other) {
     return *this;
 }
 
+// I'm just experimenting with the default move ctor and operator= 
+// just to see if it works or not. Don't delete the commented code for now.
+
 Board::Board(Board &&other) : 
+    score1{std::move(other.score1)},
+    score2{std::move(other.score2)},
     whose_turn{std::move(other.whose_turn)},
     isCheckmate{std::move(other.isCheckmate)},
     isStalemate{std::move(other.isStalemate)},
@@ -211,7 +224,9 @@ Board::Board(Board &&other) :
     black_castle_kingside{std::move(other.black_castle_kingside)},
     black_castle_queenside{std::move(other.black_castle_queenside)},
     en_passant_file{std::move(other.en_passant_file)},
-    en_passant_rank{std::move(other.en_passant_rank)}
+    en_passant_rank{std::move(other.en_passant_rank)},
+    allPossibleMoves{std::move(other.allPossibleMoves)},
+    capturingMoves{std::move(other.capturingMoves)}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -222,6 +237,8 @@ Board::Board(Board &&other) :
 
 Board & Board::operator=(Board &&other) {
     if (this != &other) {
+        std::swap(score1, other.score1);
+        std::swap(score2, other.score2);
         std::swap(whose_turn, other.whose_turn);
         std::swap(isCheckmate, other.isCheckmate);
         std::swap(isStalemate, other.isStalemate);
@@ -231,6 +248,8 @@ Board & Board::operator=(Board &&other) {
         std::swap(black_castle_queenside, other.black_castle_queenside);
         std::swap(en_passant_rank, other.en_passant_rank);
         std::swap(en_passant_file, other.en_passant_file);
+        std::swap(allPossibleMoves, other.allPossibleMoves);
+        std::swap(capturingMoves, other.capturingMoves);
         for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
             for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
                 std::swap(other.board[r][c], board[r][c]);
@@ -350,7 +369,7 @@ void Board::after_move_housekeeping() {
         resetEnPassant();
     }
     checkCastling();
-    isGameOver();
+    isGameOver(); // when this is called, it calls possibleMoveExists.
 }
 
 /**
@@ -456,7 +475,8 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
                 pawnTwoSqaures = true;
             }
 
-            // en passant
+            // en passant. we swap first because if we don't
+            // what happens if that pawn is blocking check.
             if (end_rank == en_passant_rank && end_file == en_passant_file) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
                 enPassant = true;
@@ -475,7 +495,11 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
         // this is the default way to check if your move is valid or not.
         bool no_check = move_check(start_file, start_rank, end_file, end_rank, modify_board);
 
+        // NOTE: IF MOVE IS UNSUCESSFUL, YOU LEAVE ALL BOARD STATES AS IS.
+        // YOU DO NOT CHANGE THEM.
+
         if (no_check && modify_board) {
+            // ONLY MAKE CHANGES TO THE BOARD HERE.
             // you promote to a new piece
             if (pawnPromote) {
                 getPointerAt(end_file, end_rank) = std::move(promotedPiece);
@@ -492,14 +516,12 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             after_move_housekeeping();
         } else {
             // if you don't change the board or move is invalid, you put the en passant'ed pawn back
-            // and you reset the square to 0.
             if (enPassant) {
                 std::swap(enPassantTemp, getPointerAt(end_file, start_rank));
             }
-            // if two-square pawn move is unsucessful, you reset
-            if (pawnTwoSqaures) {
-                resetEnPassant();
-            }
+            // if two-square pawn move is unsucessful, you do not 
+            // reset. you leave it as is, because you might
+            // want to take that square again.
         }
 
         return no_check;
@@ -523,10 +545,18 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     return valid_move(start_file, start_rank, end_file, end_rank, true);
 }
 
+// TODO: Reimplement the overloaded move functions with respect to pawn promotion.
+bool Board::move(Move &given_move) {
+    char start_file = given_move.start_file;
+    int start_rank = given_move.start_rank;
+    char end_file = given_move.end_file;
+    int end_rank = given_move.end_rank;
+    char promote_to = given_move.promote_to;
+    return move(start_file, start_rank, end_file, end_rank);
+}
+
 
 bool Board::possibleMoveExists() {
-    // bool valid_move_exists = false; // debugging
-
     allPossibleMoves.clear();
     capturingMoves.clear();
 
@@ -543,48 +573,14 @@ bool Board::possibleMoveExists() {
                                 allPossibleMoves.emplace_back(i, j, k, l);
                                 if (getPieceAt(k, l)->getType() != typeEmpty) {
                                     capturingMoves.emplace_back(i, j, k, l);
-                                }
-                                // valid_move_exists = true; // debugging
-                                // cout << "Possible move: " << i << j << " " << k << l << endl; // debugging
-                        
+                                }                        
                             }
-                            // if(piece->isValidMove(j, i, l, k, *this)){
-                            //     // Moving to check for check
-                            //     int sridx = fileToRow(i);
-                            //     int scidx = rankToCol(j);
-                            //     int eridx = fileToRow(k);
-                            //     int ecidx = rankToCol(l);
-
-                            //     std::unique_ptr<Piece> temp = std::make_unique<Empty>();
-
-                            //     std::swap(board[sridx][scidx], board[eridx][ecidx]);
-                            //     std::swap(temp, board[sridx][scidx]);
-
-                            //     bool isEnpassantMove = board[eridx][ecidx]->getType() == Piece::PieceType::Pawn && board[eridx][ecidx]->isEnpassant();
-                            //     Piece::PieceColour next_turn =  board[eridx][ecidx]->getColour() == Piece::PieceColour::White ? Piece::PieceColour::Black : Piece::PieceColour::White; 
-
-                            //     if (isEnpassantMove) {
-                            //         board[eridx][scidx] = std::make_unique<Empty>(); // setPieceAt coult be used here
-                            //     }
-                            //     bool check = inCheck();
-                                
-                            //     // Undoing the moves
-                            //     std::swap(temp, board[sridx][scidx]);
-                            //     std::swap(board[sridx][scidx], board[eridx][ecidx]);
-                            //     if (isEnpassantMove) {
-                            //         board[sridx][ecidx] = std::make_unique<Pawn>(next_turn);
-                            //     }
-                            //     if(!check){
-                            //         return true;
-                            //     }
-                            // }
                         }
                     }
                 }
             }
         }
     }
-    // return valid_move_exists; // debugging
     return !allPossibleMoves.empty();
 }
 
@@ -596,8 +592,16 @@ bool Board::inStalemate() {
     return isStalemate;
 }
 
+std::vector<Move> Board::getAllPossibleMoves() {
+    return allPossibleMoves;
+}
+
+std::vector<Move> Board::getAllCapturingMoves() {
+    return capturingMoves;
+}
+
 void Board::isGameOver() {
-    bool hasValidMoves = possibleMoveExists();
+    bool hasValidMoves = possibleMoveExists(); // this creates a field of all possible moves.
     if (!hasValidMoves) {
         if (inCheck()) {
             isCheckmate = true;
@@ -695,14 +699,6 @@ bool Board::endSetupMode() {
 bool Board::isCustomBoard() {
     return enteredSetupMode;
 }
-
-// bool Board::move(Move &given_move) {
-//     int startRow = given_move.startRow;
-//     int startCol = given_move.startCol;
-//     int endRow = given_move.endRow;
-//     int endCol = given_move.endCol;
-//     return move(startRow, startCol, endRow, endCol);
-// }
 
 // Piece::PieceColour Board::winner() {
 //     return Piece::PieceColour::NoColour;
