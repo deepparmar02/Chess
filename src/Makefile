@@ -1,11 +1,11 @@
 CXX = g++
-CXXFLAGS = -std=c++14 -Wall -MMD -g
+CXXFLAGS = -std=c++14 -Wpedantic -MMD -g
 EXEC = chess
-OBJECTS = main.o board.o piece.o empty.o pawn.o knight.o bishop.o rook.o queen.o king.o observer.o textdisplay.o graphicdisplay.o subject.o move.o
+OBJECTS = main.o board.o piece.o empty.o pawn.o knight.o bishop.o rook.o queen.o king.o observer.o textdisplay.o graphicdisplay.o subject.o move.o window.o
 DEPENDS = ${OBJECTS:.o=.d}
 
 ${EXEC}: ${OBJECTS}
-	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC}
+	${CXX} ${CXXFLAGS} ${OBJECTS} -o ${EXEC} -lX11
 
 -include ${DEPENDS}
 

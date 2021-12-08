@@ -1,6 +1,8 @@
 #ifndef GRAPHIC_DISPLAY_H
 #define GRAPHIC_DISPLAY_H
 #include "observer.h"
+#include "window.h"
+#include <memory>
 class Board;
 
 class GraphicDisplay : public Observer {
@@ -10,7 +12,8 @@ class GraphicDisplay : public Observer {
         ~GraphicDisplay();
     private:
         Board *board_subject;
-        // what else to add? maybe XWindows maybe?
+        // what else to add? maybe XWindow maybe?
+        Xwindow screen;
 };
 
 #endif

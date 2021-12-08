@@ -4,12 +4,14 @@
 #include <sstream>
 #include "board.h"
 #include "textdisplay.h"
+#include "graphicdisplay.h"
 using namespace std;
 
 int main() {
     Board board{};
 
     TextDisplay text{&board};
+    GraphicDisplay graphic{&board};
     // board.notifyObservers();
 
     string command;
