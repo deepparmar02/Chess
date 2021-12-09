@@ -161,6 +161,7 @@ void Board::defaultSetup() {
         getPointerAt('g', i) = std::make_unique<Knight>(colour);
         getPointerAt('h', i) = std::make_unique<Rook>(colour);
     }
+    isGameOver();
 }
 
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
@@ -552,7 +553,10 @@ bool Board::move(Move &given_move) {
     char end_file = given_move.end_file;
     int end_rank = given_move.end_rank;
     char promote_to = given_move.promote_to;
-    return move(start_file, start_rank, end_file, end_rank);
+    if (promote_to == ' ') {
+        return move(start_file, start_rank, end_file, end_rank);
+    } 
+    return move(start_file, start_rank, end_file, end_rank, convertToPiece(promote_to).get());
 }
 
 
@@ -573,7 +577,8 @@ bool Board::possibleMoveExists() {
                                 allPossibleMoves.emplace_back(i, j, k, l);
                                 if (getPieceAt(k, l)->getType() != typeEmpty) {
                                     capturingMoves.emplace_back(i, j, k, l);
-                                }                        
+                                }  
+                                                      
                             }
                         }
                     }

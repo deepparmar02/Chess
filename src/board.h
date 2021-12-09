@@ -135,6 +135,7 @@ class Board : public Subject {
 
         std::vector<Move> allPossibleMoves;
         std::vector<Move> capturingMoves;
+        std::vector<Move> checkMoves;
 
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         void resetEnPassant();
