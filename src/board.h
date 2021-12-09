@@ -46,6 +46,7 @@ class Board : public Subject {
         /* GAME STATE METHODS */
         std::vector<Move> getAllPossibleMoves();
         std::vector<Move> getAllCapturingMoves();
+        std::vector<Move> getCheckMoves();
 
         // possibleMoveExists checks if current player can make any move or not.
         bool possibleMoveExists();
@@ -141,7 +142,7 @@ class Board : public Subject {
         void resetEnPassant();
         void setCastlingState(char file, int rank, Piece::PieceType type, bool &castling_status);
         void checkCastling();
-        bool move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
+        bool move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board, Piece::PieceColour player_in_check);
         bool valid_move(char start_file, int start_rank, char end_file, int end_rank, 
                         Piece *promote_to, bool modify_board);
         bool valid_move(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);

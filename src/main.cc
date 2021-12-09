@@ -24,7 +24,7 @@ int main() {
     int turn = 0; // 0 = white, 1 = black
     string command;
     while (cin >> command) {
-        if (command == "game") {
+        if (command == "game" || command == "g") {
             string whitePlayer, blackPlayer;
             cin >> whitePlayer >> blackPlayer;
 
@@ -63,7 +63,7 @@ int main() {
             board.setGameRunning();
             board.notifyObservers();
         }
-        else if (command == "resign") {
+        else if (command == "resign" || command == "r") {
             if (!board.isGameRunning()) {
                 cout << "Game is currently not running." << endl;
                 continue;
@@ -76,7 +76,7 @@ int main() {
             }
             cout << "wins!" << endl;
         }
-        else if (command == "move") {
+        else if (command == "move" || command == "m") {
             if (!board.isGameRunning()) {
                 cout << "Game is currently not running." << endl;
                 continue;
@@ -116,7 +116,7 @@ int main() {
                 }
             }
         }
-        else if (command == "setup") { 
+        else if (command == "setup" || command == "s") { 
             if (board.isGameRunning()) {
                 cout << "Game is currently running." << endl;
                 continue;
@@ -146,7 +146,7 @@ int main() {
 
                     board.changeColour(colour);
                 }
-                else if (setupCmd == "done") {
+                else if (setupCmd == "done" || setupCmd == "d") {
                     // check for board validity before quitting
                     if (board.endSetupMode()) {
                         break;

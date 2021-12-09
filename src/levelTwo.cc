@@ -6,7 +6,10 @@
 LevelTwo::LevelTwo(Board &board) : Player{board} {}
 
 Move LevelTwo::make_move() {
-    auto possible_moves = board.getAllCapturingMoves();
+    auto possible_moves = board.getCheckMoves();
+    if (possible_moves.empty()) {
+        possible_moves = board.getAllCapturingMoves();
+    }
     if (possible_moves.empty()) {
         possible_moves = board.getAllPossibleMoves();
     }

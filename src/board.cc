@@ -380,8 +380,11 @@ void Board::after_move_housekeeping() {
  * It does not attempt to touch other pieces other than when capturing pieces.
  * 
  * If modify_board is false, it retains the state of the board.
+ * 
+ * If player_in_check != whose_turn, you must retain the state of the board, just
+ * so you don't accidentally move yourself in check.
  */
-bool Board::move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board) {
+bool Board::move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board, Piece::PieceColour player_in_check) {
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
     std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
 
@@ -389,14 +392,18 @@ bool Board::move_check(char start_file, int start_rank, char end_file, int end_r
     std::swap(start_piece, end_piece);
     std::swap(start_piece, capturedPiece);
 
+    std::swap(whose_turn, player_in_check);
+
     bool in_check = inCheck();
     
-    if (in_check || !modify_board) {
+    if (in_check || !modify_board || player_in_check != whose_turn) {
         std::swap(start_piece, capturedPiece);
         std::swap(start_piece, end_piece);
     }
 
-    return !in_check;
+    std::swap(whose_turn, player_in_check);
+
+    return in_check;
 }
 
 // If modify_board is false, it retains the state of the board.
@@ -449,7 +456,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             // If that is satisfied, we will move the king down 
             // at line 430 for real (if modify_board is true). 
             // Else, we don't move and it's false.
-            castling = !inCheck() && move_check(start_file, start_rank, mid_file, end_rank, false);
+            castling = !inCheck() && !move_check(start_file, start_rank, mid_file, end_rank, false, whose_turn);
             if (!castling) {
                 return false;
             }
@@ -494,7 +501,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
 
         // regardless of en passant or pawn promotion or castling, from line 473 - 488
         // this is the default way to check if your move is valid or not.
-        bool no_check = move_check(start_file, start_rank, end_file, end_rank, modify_board);
+        bool no_check = !move_check(start_file, start_rank, end_file, end_rank, modify_board, whose_turn);
 
         // NOTE: IF MOVE IS UNSUCESSFUL, YOU LEAVE ALL BOARD STATES AS IS.
         // YOU DO NOT CHANGE THEM.
@@ -563,6 +570,7 @@ bool Board::move(Move &given_move) {
 bool Board::possibleMoveExists() {
     allPossibleMoves.clear();
     capturingMoves.clear();
+    checkMoves.clear();
 
     for (char i = 'a'; i <= 'h'; i++) {
         for (int j = 1; j <= 8; j++){
@@ -573,11 +581,16 @@ bool Board::possibleMoveExists() {
                         for(int l = 1; l <= 8; l++){
                             if (valid_move(i, j, k, l, false)) {
                                 // TODO: Does not check if pawn promotion is legal or not, so work on it.
+
+                                Piece::PieceColour opponent = whose_turn == White ? Black : White;
                                 
                                 allPossibleMoves.emplace_back(i, j, k, l);
                                 if (getPieceAt(k, l)->getType() != typeEmpty) {
                                     capturingMoves.emplace_back(i, j, k, l);
                                 }  
+                                if (move_check(i, j, k, l, false, opponent)) {
+                                    checkMoves.emplace_back(i, j, k, l);
+                                }
                                                       
                             }
                         }
@@ -603,6 +616,10 @@ std::vector<Move> Board::getAllPossibleMoves() {
 
 std::vector<Move> Board::getAllCapturingMoves() {
     return capturingMoves;
+}
+
+std::vector<Move> Board::getCheckMoves() {
+    return checkMoves;
 }
 
 void Board::isGameOver() {
