@@ -1,5 +1,7 @@
 #include "queen.h"
 #include "board.h"
+#include "move.h"
+#include <vector>
 
 Queen::Queen(PieceColour colour): Piece{colour}{}
 
@@ -51,4 +53,33 @@ bool Queen::isValidMove(int startRow, char startCol, int endRow, char endCol, Bo
 std::unique_ptr<Piece> Queen::make_copy() const {
     auto newPtr = std::make_unique<Queen>(*this);
     return newPtr;
+}
+
+std::vector<Move> Queen::valid_direction_moves(char file, int rank) const{
+    std::vector<Move> directional_moves;
+
+    // diagonal moves
+    for (int right = -1; right <= 1; right += 2) {
+        for (int up = -1; up <= 1; up += 2) {
+            for (int i = 1; inBounds(file + right * i, rank + up * i) ; ++i) {
+                directional_moves.emplace_back(file, rank, file + right * i, rank + up * i);
+            }
+        }
+    }
+
+    // horizontal moves
+    for (char i = 'a'; i <= 'h'; i++) {
+        if (i != file) {
+            directional_moves.emplace_back(file, rank, i, rank);
+        }
+    }
+
+    // vertical moves
+    for (int i = 1; i <= 8; i++) {
+        if (i != rank) {
+            directional_moves.emplace_back(file, rank, file, i);
+        }
+    }
+
+    return directional_moves;
 }

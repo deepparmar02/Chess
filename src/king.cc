@@ -1,5 +1,7 @@
 #include "king.h"
 #include "board.h"
+#include "move.h"
+#include <vector>
 
 King::King(Piece::PieceColour colour): Piece{colour}{}
 
@@ -72,4 +74,37 @@ bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
 std::unique_ptr<Piece> King::make_copy() const {
     auto newPtr = std::make_unique<King>(*this);
     return newPtr;
+}
+
+std::vector<Move> King::valid_direction_moves(char file, int rank) const {
+    std::vector<Move> valid_moves;
+
+    if (inBounds(file, rank + 1)) {
+        valid_moves.emplace_back(file, rank, file, rank + 1);
+    }
+    if (inBounds(file, rank - 1)) {
+        valid_moves.emplace_back(file, rank, file, rank - 1);
+    }
+
+    if (inBounds(file - 1, rank + 1)) {
+        valid_moves.emplace_back(file, rank, file - 1, rank + 1);
+    }
+    if (inBounds(file + 1, rank + 1)) {
+        valid_moves.emplace_back(file, rank, file + 1, rank + 1);
+    } 
+    if (inBounds(file - 1, rank - 1)) {
+        valid_moves.emplace_back(file, rank, file - 1, rank - 1);
+    }
+    if (inBounds(file + 1, rank - 1)) {
+        valid_moves.emplace_back(file, rank, file + 1, rank - 1);
+    } 
+
+    if (inBounds(file - 1, rank)) {
+        valid_moves.emplace_back(file, rank, file - 1, rank);
+    }
+    if (inBounds(file + 1, rank)) {
+        valid_moves.emplace_back(file, rank, file + 1, rank);
+    } 
+
+    return valid_moves;
 }

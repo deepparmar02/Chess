@@ -1,5 +1,7 @@
 #include "knight.h"
 #include "board.h"
+#include "move.h"
+#include <vector>
 
 Knight::Knight(Piece::PieceColour colour): Piece{colour}{}
 
@@ -37,4 +39,43 @@ bool Knight::isValidMove(int startRow, char startCol, int endRow, char endCol, B
 std::unique_ptr<Piece> Knight::make_copy() const {
     auto newPtr = std::make_unique<Knight>(*this);
     return newPtr;
+}
+
+std::vector<Move> Knight::valid_direction_moves(char file, int rank) const{
+    std::vector<Move> directional_moves;
+
+
+    if (inBounds(file + 2, rank + 1)) {
+        directional_moves.emplace_back(file, rank, file+2, rank+1);
+    }
+
+    if (inBounds(file+2, rank-1)){
+        directional_moves.emplace_back(file, rank, file+2, rank-1);
+    }
+
+    if (inBounds(file - 2, rank + 1)) {
+        directional_moves.emplace_back(file, rank, file-2, rank+1);
+    }
+
+    if (inBounds(file - 2, rank - 1)) {
+        directional_moves.emplace_back(file, rank, file-2, rank-1);
+    }
+
+    if (inBounds(file + 1, rank + 2)) {
+        directional_moves.emplace_back(file, rank, file+1, rank+2);
+    }
+
+    if (inBounds(file + 1, rank - 2)) {
+        directional_moves.emplace_back(file, rank, file+1, rank-2);
+    }
+    
+    if (inBounds(file - 1, rank + 2)) {
+        directional_moves.emplace_back(file, rank, file-1, rank+2);
+    }
+    
+    if (inBounds(file-1, rank-2)) {
+        directional_moves.emplace_back(file, rank, file-1, rank-2);
+    }
+
+    return directional_moves;
 }

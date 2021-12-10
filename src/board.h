@@ -47,6 +47,7 @@ class Board : public Subject {
         std::vector<Move> getAllPossibleMoves();
         std::vector<Move> getAllCapturingMoves();
         std::vector<Move> getCheckMoves();
+        std::vector<Move> getAvoidCapturingMoves();
 
         // possibleMoveExists checks if current player can make any move or not.
         bool possibleMoveExists();
@@ -104,6 +105,9 @@ class Board : public Subject {
         // resign concedes the game to the opponent
         void resign();
 
+        // isPieceSafe checks if the piece at (file, rank) is safe
+        bool isPieceSafe(char file, int rank);
+
         // winner returns the colour of the winner
         // Piece::PieceColour winner();
 
@@ -137,6 +141,7 @@ class Board : public Subject {
         std::vector<Move> allPossibleMoves;
         std::vector<Move> capturingMoves;
         std::vector<Move> checkMoves;
+        std::vector<Move> avoidCapturingMoves;
 
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         void resetEnPassant();
@@ -147,6 +152,7 @@ class Board : public Subject {
                         Piece *promote_to, bool modify_board);
         bool valid_move(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
         void after_move_housekeeping();
+        bool move_safe(char start_file, int start_rank, char end_file, int end_rank);
 
         // for now, we use friend. breaks encapsulation but easy to write and test
         friend class Pawn;

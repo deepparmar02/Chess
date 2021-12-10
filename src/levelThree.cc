@@ -1,9 +1,24 @@
 #include "move.h"
 #include "board.h"
 #include "levelThree.h"
+#include <random>
+#include <iostream>
 
 LevelThree::LevelThree(Board &board) : Player{board} {}
 
 Move LevelThree::make_move() {
-    return Move{0, 0, 0, 0, '\0'};
+    auto possible_moves = board.getAvoidCapturingMoves();
+    std::cout << possible_moves.size() << std::endl;
+    // if (possible_moves.empty()) {
+    //     possible_moves = board.getCheckMoves();
+    // }
+    // if (possible_moves.empty()) {
+    //     possible_moves = board.getAllCapturingMoves();
+    // }
+    // if (possible_moves.empty()) {
+    //     possible_moves = board.getAllPossibleMoves();
+    // }
+    srand(time(0));
+    int randNum = rand() % (possible_moves.size());
+    return possible_moves[randNum];
 }

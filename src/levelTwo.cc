@@ -2,6 +2,7 @@
 #include "board.h"
 #include "levelTwo.h"
 #include <random>
+#include <iostream>
 
 LevelTwo::LevelTwo(Board &board) : Player{board} {}
 
@@ -13,6 +14,7 @@ Move LevelTwo::make_move() {
     if (possible_moves.empty()) {
         possible_moves = board.getAllPossibleMoves();
     }
+    srand(time(0));
     int randNum = rand() % (possible_moves.size());
     return possible_moves[randNum];
 }
