@@ -9,4 +9,5 @@ kingsIndian
 castlingcheck
 all_pieces_stalemate
 setup
-level_two_test
+computerCheck
+level_two_many_moves_test
