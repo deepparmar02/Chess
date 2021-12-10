@@ -590,8 +590,7 @@ bool Board::possibleMoveExists() {
                                 }  
                                 if (move_check(i, j, k, l, false, opponent)) {
                                     checkMoves.emplace_back(i, j, k, l);
-                                }
-                                                      
+                                }                 
                             }
                         }
                     }

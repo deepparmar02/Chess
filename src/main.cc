@@ -82,8 +82,6 @@ int main() {
                 continue;
             }
 
-            cout << players.size() << endl;
-
             // Human handles input. Computer doesn't need to.
             Move move_made = players[turn]->make_move();
             // if promote move
