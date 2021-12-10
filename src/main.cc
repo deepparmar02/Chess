@@ -46,7 +46,6 @@ int main() {
             ss.str(blackPlayer);
             if (ss >> blackPlayerLevel) {
                 if (blackPlayerLevel == 1) {
-                    cout << "entered lvl 1" << endl;
                     players[1] = std::make_unique<LevelOne>(board);
                 } else if (blackPlayerLevel == 2) {
                     players[1] = std::make_unique<LevelTwo>(board);
@@ -87,7 +86,6 @@ int main() {
             // if promote move
             bool valid_move = board.move(move_made);
 
-            // cout << board << endl;
             board.notifyObservers();
 
             if (valid_move) {
@@ -119,6 +117,7 @@ int main() {
                 cout << "Game is currently running." << endl;
                 continue;
             }
+            board.notifyObservers();
             board.enterSetupMode();
             string setupCmd;
             while (cin >> setupCmd) {
