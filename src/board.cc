@@ -599,9 +599,7 @@ bool Board::possibleMoveExists() {
                     }  
 
                     if (!isPieceSafe(i, j)) {
-                        cout << "Not safe: " << i << j << endl;
                         if (move_safe(move.start_file, move.start_rank, move.end_file, move.end_rank)) {
-                            cout << "Safe move to do: " << move.end_file << move.end_rank << endl;
                             avoidCapturingMoves.push_back(move);
                         }
                     }
