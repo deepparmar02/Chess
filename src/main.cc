@@ -5,6 +5,12 @@
 #include "board.h"
 #include "textdisplay.h"
 #include "graphicdisplay.h"
+#include "player.h"
+#include "human.h"
+#include "levelOne.h"
+#include "levelTwo.h"
+#include "levelThree.h"
+#include "move.h"
 using namespace std;
 
 int main() {
@@ -14,21 +20,42 @@ int main() {
     GraphicDisplay graphic{&board};
     // board.notifyObservers();
 
+    std::vector<std::unique_ptr<Player>> players(2);
+    int turn = 0; // 0 = white, 1 = black
     string command;
     while (cin >> command) {
-        if (command == "game") {
+        if (command == "game" || command == "g") {
             string whitePlayer, blackPlayer;
             cin >> whitePlayer >> blackPlayer;
-
-            cout << whitePlayer << " Vs. " << blackPlayer << endl;
 
             // if any player is an int, then they are computers
             istringstream ss{whitePlayer};
             int whitePlayerLevel, blackPlayerLevel;
-            if (ss >> whitePlayerLevel) cout << "Player 1 is Computer of level " << whitePlayerLevel << endl;
+            if (ss >> whitePlayerLevel) {
+                if (whitePlayerLevel == 1) {
+                    players[0] = std::make_unique<LevelOne>(board);
+                } else if (whitePlayerLevel == 2) {
+                    players[0] = std::make_unique<LevelTwo>(board);
+                } else if (whitePlayerLevel == 3) {
+                    players[0] = std::make_unique<LevelThree>(board);
+                } 
+            } else {
+                players[0] = std::make_unique<Human>(board);
+            }
             ss.clear();
             ss.str(blackPlayer);
-            if (ss >> blackPlayerLevel) cout << "Player 2 is Computer of level " << blackPlayerLevel << endl;
+            if (ss >> blackPlayerLevel) {
+                if (blackPlayerLevel == 1) {
+                    cout << "entered lvl 1" << endl;
+                    players[1] = std::make_unique<LevelOne>(board);
+                } else if (blackPlayerLevel == 2) {
+                    players[1] = std::make_unique<LevelTwo>(board);
+                } else if (blackPlayerLevel == 3) {
+                    players[1] = std::make_unique<LevelThree>(board);
+                } 
+            } else {
+                players[1] = std::make_unique<Human>(board);
+            }
 
             if (!board.isCustomBoard()) {
                 board.defaultSetup();
@@ -36,7 +63,7 @@ int main() {
             board.setGameRunning();
             board.notifyObservers();
         }
-        else if (command == "resign") {
+        else if (command == "resign" || command == "r") {
             if (!board.isGameRunning()) {
                 cout << "Game is currently not running." << endl;
                 continue;
@@ -49,53 +76,22 @@ int main() {
             }
             cout << "wins!" << endl;
         }
-        else if (command == "move") {
+        else if (command == "move" || command == "m") {
             if (!board.isGameRunning()) {
                 cout << "Game is currently not running." << endl;
                 continue;
             }
-            string s;
-            getline(cin, s);  // read rest of line from input
-            istringstream ss{s};
-            string position;
-            int i = 0;
-            
-            // stores all columns (cols[0] is start column, cols[1] is end column)
-            vector<char> cols;  
 
-            // stores all rows (rows[0] is start column, rows[1] is end row)
-            vector<int> rows; 
+            // Human handles input. Computer doesn't need to.
+            Move move_made = players[turn]->make_move();
+            // if promote move
+            bool valid_move = board.move(move_made);
 
-            // stores newPiece inputted for pawn promotion
-            char newPiece;
-            
-            while (ss >> position) {
-                istringstream ss1{position};
-                i++;
-                // if 3 strings (i==2) are inputted for move command
-                // then this is pawn promotion move
-                if (i == 3) {
-                    ss1 >> newPiece;
-                    break;
-                } 
-                char col;
-                int row;
-                ss1 >> col;
-                ss1 >> row;
-                cols.push_back(col);
-                rows.push_back(row);
-            }
-
-            bool valid_move = false;
-            if (i == 3) {
-                // call pawn promotion move overload method
-            } else {
-                valid_move = board.move(cols[0], rows[0], cols[1], rows[1]);
-            }
             // cout << board << endl;
             board.notifyObservers();
 
             if (valid_move) {
+                turn = (turn + 1) % 2; // change turns
                 if (board.inCheckmate()) {
                     cout << "Checkmate! ";
                     if (board.whose_turn == Piece::PieceColour::White) {
@@ -118,7 +114,7 @@ int main() {
                 }
             }
         }
-        else if (command == "setup") { 
+        else if (command == "setup" || command == "s") { 
             if (board.isGameRunning()) {
                 cout << "Game is currently running." << endl;
                 continue;
@@ -148,7 +144,7 @@ int main() {
 
                     board.changeColour(colour);
                 }
-                else if (setupCmd == "done") {
+                else if (setupCmd == "done" || setupCmd == "d") {
                     // check for board validity before quitting
                     if (board.endSetupMode()) {
                         break;

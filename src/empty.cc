@@ -1,4 +1,6 @@
 #include "empty.h"
+#include "move.h"
+#include <vector>
 
 Empty::Empty(): Piece{NoColour}{}
 
@@ -19,4 +21,9 @@ bool Empty::isValidMove(int startRow, char startCol, int endRow, char endCol, Bo
 std::unique_ptr<Piece> Empty::make_copy() const {
     auto newPtr = std::make_unique<Empty>(*this);
     return newPtr;
+}
+
+std::vector<Move> Empty::valid_direction_moves(char file, int rank) const {
+    std::vector<Move> empty_vector;
+    return empty_vector;
 }

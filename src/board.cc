@@ -161,6 +161,7 @@ void Board::defaultSetup() {
         getPointerAt('g', i) = std::make_unique<Knight>(colour);
         getPointerAt('h', i) = std::make_unique<Rook>(colour);
     }
+    isGameOver();
 }
 
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
@@ -265,8 +266,6 @@ void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
 }
 
 bool Board::inCheck() {
-    // I can think of two ways to implement this. 
-
     // This implemenation feels very "code by interface". For every square,
     // I just find if the King can be captured by any piece on the board.
     // If yes, it's check. This can be a bit inefficient, because I check
@@ -290,25 +289,19 @@ bool Board::inCheck() {
         }
     }
 
+    return !isPieceSafe(king_file, king_rank);
+
     // we loop through every square to see if there's a piece that is in sight of
     // capturing the king.
-    for (char f = 'a'; f <= 'h'; ++f) {
-        for (int r = 1; r <= 8; ++r) {
-            // if a piece can move and capture the king
-            if (getPieceAt(f, r)->isValidMove(r, f, king_rank, king_file, *this)) {
-                return true;
-            }
-        }
-    }
-    return false;
-
-    // The second implementation I can think of is more "code by implementation." 
-    // From the king's position, I can check for every direction (up-down, left-right, 
-    // diagonals, knight-hops) to see if the first non-empty piece I encounter is 
-    // an opponent's respective piece or not.
-    // For example, if I go horizontal and vertical, I check if there's a rook or queen.
-    // If I go diagonal, I check if there's a queen, bishop or pawn.
-    // If I go knight-hops, is there a knight.
+    // for (char f = 'a'; f <= 'h'; ++f) {
+    //     for (int r = 1; r <= 8; ++r) {
+    //         // if a piece can move and capture the king
+    //         if (getPieceAt(f, r)->isValidMove(r, f, king_rank, king_file, *this)) {
+    //             return true;
+    //         }
+    //     }
+    // }
+    // return false;
 }
 
 // reset en_passant_every time you start your move
@@ -379,8 +372,11 @@ void Board::after_move_housekeeping() {
  * It does not attempt to touch other pieces other than when capturing pieces.
  * 
  * If modify_board is false, it retains the state of the board.
+ * 
+ * If player_in_check != whose_turn, you must retain the state of the board, just
+ * so you don't accidentally move yourself in check.
  */
-bool Board::move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board) {
+bool Board::move_check(char start_file, int start_rank, char end_file, int end_rank, bool modify_board, Piece::PieceColour player_in_check) {
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
     std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
 
@@ -388,14 +384,34 @@ bool Board::move_check(char start_file, int start_rank, char end_file, int end_r
     std::swap(start_piece, end_piece);
     std::swap(start_piece, capturedPiece);
 
+    std::swap(whose_turn, player_in_check);
+
     bool in_check = inCheck();
     
-    if (in_check || !modify_board) {
+    if (in_check || !modify_board || player_in_check != whose_turn) {
         std::swap(start_piece, capturedPiece);
         std::swap(start_piece, end_piece);
     }
 
-    return !in_check;
+    std::swap(whose_turn, player_in_check);
+
+    return in_check;
+}
+
+bool Board::move_safe(char start_file, int start_rank, char end_file, int end_rank) {
+    std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
+    std::unique_ptr<Piece> & end_piece = getPointerAt(end_file, end_rank);
+
+    std::unique_ptr<Piece> capturedPiece = std::make_unique<Empty>();
+    std::swap(start_piece, end_piece);
+    std::swap(start_piece, capturedPiece);
+
+    bool is_piece_safe = isPieceSafe(end_file, end_rank);
+    
+    std::swap(start_piece, capturedPiece);
+    std::swap(start_piece, end_piece);
+
+    return is_piece_safe;
 }
 
 // If modify_board is false, it retains the state of the board.
@@ -448,7 +464,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             // If that is satisfied, we will move the king down 
             // at line 430 for real (if modify_board is true). 
             // Else, we don't move and it's false.
-            castling = !inCheck() && move_check(start_file, start_rank, mid_file, end_rank, false);
+            castling = !inCheck() && !move_check(start_file, start_rank, mid_file, end_rank, false, whose_turn);
             if (!castling) {
                 return false;
             }
@@ -493,7 +509,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
 
         // regardless of en passant or pawn promotion or castling, from line 473 - 488
         // this is the default way to check if your move is valid or not.
-        bool no_check = move_check(start_file, start_rank, end_file, end_rank, modify_board);
+        bool no_check = !move_check(start_file, start_rank, end_file, end_rank, modify_board, whose_turn);
 
         // NOTE: IF MOVE IS UNSUCESSFUL, YOU LEAVE ALL BOARD STATES AS IS.
         // YOU DO NOT CHANGE THEM.
@@ -552,36 +568,74 @@ bool Board::move(Move &given_move) {
     char end_file = given_move.end_file;
     int end_rank = given_move.end_rank;
     char promote_to = given_move.promote_to;
-    return move(start_file, start_rank, end_file, end_rank);
+    if (promote_to == ' ') {
+        return move(start_file, start_rank, end_file, end_rank);
+    } 
+    return move(start_file, start_rank, end_file, end_rank, convertToPiece(promote_to).get());
 }
 
 
 bool Board::possibleMoveExists() {
     allPossibleMoves.clear();
     capturingMoves.clear();
+    checkMoves.clear();
 
     for (char i = 'a'; i <= 'h'; i++) {
         for (int j = 1; j <= 8; j++){
             auto piece = getPieceAt(i, j);
-            if(piece->getType() != Piece::PieceType::Empty){
-                if(piece->getColour() == whose_turn){
-                    for(char k = 'a'; k <= 'h'; k++){
-                        for(int l = 1; l <= 8; l++){
-                            if (valid_move(i, j, k, l, false)) {
-                                // TODO: Does not check if pawn promotion is legal or not, so work on it.
-                                
-                                allPossibleMoves.emplace_back(i, j, k, l);
-                                if (getPieceAt(k, l)->getType() != typeEmpty) {
-                                    capturingMoves.emplace_back(i, j, k, l);
-                                }                        
-                            }
+            std::vector<Move> directional_moves = piece->valid_direction_moves(i, j);
+            for (auto move : directional_moves) {
+                if (valid_move(move.start_file, move.start_rank, move.end_file, move.end_rank, false)) {
+                    // TODO: Does not check if pawn promotion is legal or not, so work on it.
+
+                    Piece::PieceColour opponent = whose_turn == White ? Black : White;
+                    
+                    allPossibleMoves.push_back(move);
+                    if (getPieceAt(move.end_file, move.end_rank)->getType() != typeEmpty) {
+                        capturingMoves.push_back(move);
+                    }  
+                    if (move_check(move.start_file, move.start_rank, move.end_file, move.end_rank, false, opponent)) {
+                        checkMoves.push_back(move);
+                    }  
+
+                    if (!isPieceSafe(i, j)) {
+                        cout << "Not safe: " << i << j << endl;
+                        if (move_safe(move.start_file, move.start_rank, move.end_file, move.end_rank)) {
+                            cout << "Safe move to do: " << move.end_file << move.end_rank << endl;
+                            avoidCapturingMoves.push_back(move);
                         }
                     }
                 }
+                
             }
+            // if(piece->getType() != Piece::PieceType::Empty){
+            //     if(piece->getColour() == whose_turn){
+            //         for(char k = 'a'; k <= 'h'; k++){
+            //             for(int l = 1; l <= 8; l++){
+            //                 if (valid_move(i, j, k, l, false)) {
+                                               
+            //                 }
+            //             }
+            //         }
+            //     }
+            // }
         }
     }
     return !allPossibleMoves.empty();
+}
+
+bool Board::isPieceSafe(char file, int rank) {
+    // we loop through every square to see if there's a piece that is in sight of
+    // capturing the king.
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            // if a piece can move and capture the piece
+            if (getPieceAt(f, r)->isValidMove(r, f, rank, file, *this)) {
+                return false;
+            }
+        }
+    }
+    return true;
 }
 
 bool Board::inCheckmate() {
@@ -598,6 +652,14 @@ std::vector<Move> Board::getAllPossibleMoves() {
 
 std::vector<Move> Board::getAllCapturingMoves() {
     return capturingMoves;
+}
+
+std::vector<Move> Board::getCheckMoves() {
+    return checkMoves;
+}
+
+std::vector<Move> Board::getAvoidCapturingMoves() {
+    return avoidCapturingMoves;
 }
 
 void Board::isGameOver() {
@@ -691,6 +753,7 @@ void Board::setGameRunning(){
 
 bool Board::endSetupMode() {
     if (!isPawnLastRow() && isTwoKings() && !inCheck()) {
+        isGameOver();
         return true;
     }
     return false;

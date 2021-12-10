@@ -1,5 +1,7 @@
 #include "pawn.h"
 #include "board.h"
+#include "move.h"
+#include <vector>
 #include <iostream>
 using namespace std;
 
@@ -62,4 +64,38 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
 std::unique_ptr<Piece> Pawn::make_copy() const {
     auto newPtr = std::make_unique<Pawn>(*this);
     return newPtr;
+}
+
+std::vector<Move> Pawn::valid_direction_moves(char file, int rank) const {
+    std::vector<Move> valid_moves;
+
+    if (colour == Piece::PieceColour::White) {
+        if (inBounds(file, rank + 1)) {
+            valid_moves.emplace_back(file, rank, file, rank + 1);
+        }
+        if (inBounds(file, rank + 2)) {
+            valid_moves.emplace_back(file, rank, file, rank + 2);
+        }
+        if (inBounds(file - 1, rank + 1)) {
+            valid_moves.emplace_back(file, rank, file - 1, rank + 1);
+        }
+        if (inBounds(file + 1, rank + 1)) {
+            valid_moves.emplace_back(file, rank, file + 1, rank + 1);
+        }  
+    } else {
+        if (inBounds(file, rank - 1)) {
+            valid_moves.emplace_back(file, rank, file, rank - 1);
+        }
+        if (inBounds(file, rank - 2)) {
+            valid_moves.emplace_back(file, rank, file, rank - 2);
+        }
+        if (inBounds(file - 1, rank - 1)) {
+            valid_moves.emplace_back(file, rank, file - 1, rank - 1);
+        }
+        if (inBounds(file + 1, rank - 1)) {
+            valid_moves.emplace_back(file, rank, file + 1, rank - 1);
+        }  
+    }
+    
+    return valid_moves;
 }

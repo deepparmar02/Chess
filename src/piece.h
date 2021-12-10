@@ -1,7 +1,9 @@
 #ifndef PIECE_H
 #define PIECE_H
 #include <memory>
+#include <vector>
 class Board;
+class Move;
 
 class Piece{
     public:
@@ -22,7 +24,14 @@ class Piece{
 
         // TODO: Implement make_copy, copy constructor, move constructor
         virtual std::unique_ptr<Piece> make_copy() const = 0;
-        virtual bool isEnpassant();
+
+        /** valid_direction_moves gives ALL possible moves, valid or invalid, that piece can
+          * take, depending on what piece it is. For example, for a bishop, it returns all
+          * diagonal moves, a rook, all horizontal and vertical moves.
+          */
+        virtual std::vector<Move> valid_direction_moves(char file, int rank) const = 0;
+
+        bool inBounds(char file, int rank) const;
 };
 
 #endif

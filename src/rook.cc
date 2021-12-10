@@ -1,5 +1,7 @@
 #include "rook.h"
 #include "board.h"
+#include "move.h"
+#include <vector>
 
 Rook::Rook(Piece::PieceColour colour): Piece{colour}{}
 
@@ -40,4 +42,19 @@ bool Rook::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
 std::unique_ptr<Piece> Rook::make_copy() const {
     auto newPtr = std::make_unique<Rook>(*this);
     return newPtr;
+}
+
+std::vector<Move> Rook::valid_direction_moves(char file, int rank) const {
+    std::vector<Move> directional_moves;
+    for (char i = 'a'; i <= 'h'; i++) {
+        if (i != file) {
+            directional_moves.emplace_back(file, rank, i, rank);
+        }
+    }
+    for (int i = 1; i <= 8; i++) {
+        if (i != rank) {
+            directional_moves.emplace_back(file, rank, file, i);
+        }
+    }
+    return directional_moves;
 }
