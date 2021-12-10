@@ -510,7 +510,6 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
         // regardless of en passant or pawn promotion or castling, from line 473 - 488
         // this is the default way to check if your move is valid or not.
         bool no_check = !move_check(start_file, start_rank, end_file, end_rank, modify_board, whose_turn);
-
         // NOTE: IF MOVE IS UNSUCESSFUL, YOU LEAVE ALL BOARD STATES AS IS.
         // YOU DO NOT CHANGE THEM.
 
@@ -579,6 +578,7 @@ bool Board::possibleMoveExists() {
     allPossibleMoves.clear();
     capturingMoves.clear();
     checkMoves.clear();
+    avoidCapturingMoves.clear();
 
     for (char i = 'a'; i <= 'h'; i++) {
         for (int j = 1; j <= 8; j++){

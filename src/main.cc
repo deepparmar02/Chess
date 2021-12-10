@@ -17,7 +17,7 @@ int main() {
     Board board{};
 
     TextDisplay text{&board};
-    GraphicDisplay graphic{&board};
+    // GraphicDisplay graphic{&board};
     // board.notifyObservers();
 
     std::vector<std::unique_ptr<Player>> players(2);
@@ -87,7 +87,6 @@ int main() {
             bool valid_move = board.move(move_made);
 
             board.notifyObservers();
-
             if (valid_move) {
                 turn = (turn + 1) % 2; // change turns
                 if (board.inCheckmate()) {

@@ -2,6 +2,8 @@
 #include "board.h"
 #include "levelThree.h"
 #include <random>
+using namespace std;
+#include <iostream>
 
 LevelThree::LevelThree(Board &board) : Player{board} {}
 
