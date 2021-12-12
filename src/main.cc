@@ -141,6 +141,13 @@ int main() {
                     cin >> colour;
 
                     board.changeColour(colour);
+                    if ("white" == colour) {
+                        turn = 0;
+                    } else if ("black" == colour) {
+                        turn = 1;
+                    } else {
+                        cout << "Invalid colour" << endl;
+                    }
                 }
                 else if (setupCmd == "done" || setupCmd == "d") {
                     // check for board validity before quitting

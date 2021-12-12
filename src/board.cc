@@ -711,10 +711,7 @@ bool Board::isTwoKings() {
             }
         }
     }
-    if(whiteKings != 1 && blackKings != 1){
-        return false;
-    }
-    return true;
+    return (whiteKings == 1 && blackKings == 1);
 }
 
 void Board::changeColour(string colour){

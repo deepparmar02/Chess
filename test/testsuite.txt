@@ -11,3 +11,4 @@ all_pieces_stalemate
 setup
 computerCheck
 level_two_many_moves_test
+block_check
