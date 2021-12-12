@@ -504,8 +504,15 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
 
         // pawn promotion stuff
         bool pawnPromote = false;
-        std::unique_ptr<Piece> promotedPiece = promote_to->make_copy();
-        promotedPiece->colour = whose_turn;
+        std::unique_ptr<Piece> promotedPiece;
+        if (promote_to != nullptr) {
+            promotedPiece = promote_to->make_copy();
+            promotedPiece->colour = whose_turn;
+        } else {
+            // promote_to->whatever causes segmentation faults,
+            // so if it's nothing, we "promote" to empty.
+            promotedPiece = std::make_unique<Empty>();
+        }
 
         if (start_piece->getType() == typePawn) {
             // set en passant-able square
