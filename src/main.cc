@@ -80,6 +80,7 @@ int main() {
                 cout << "White ";
             }
             cout << "wins!" << endl;
+            turn = 0;
         }
         else if (command == "move" || command == "m") {
             if (!board.isGameRunning()) {
@@ -124,7 +125,7 @@ int main() {
             }
             board.notifyObservers();
             board.enterSetupMode();
-            // turn = 0; // apparently by default, when you enter setup mode
+            turn = 0; // apparently by default, when you enter setup mode
             // the default is that it's white's turn.
             string setupCmd;
             while (cin >> setupCmd) {
@@ -169,16 +170,6 @@ int main() {
                 }
             }
         }
-        //  else if ("fancy" == command) {
-        //     if (board.isGameRunning()) {
-        //         cout << "Game is currently running." << endl;
-        //         continue;
-        //     }
-        //     board.detach(text);
-        // } else if ("text" == command) {
-        //     board.detach(fancy);
-        //     board.detach(text);
-        // }
         else {
             cerr << "Invalid Command" << endl;
         }
