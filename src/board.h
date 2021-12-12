@@ -48,6 +48,8 @@ class Board : public Subject {
         std::vector<Move> getAllCapturingMoves();
         std::vector<Move> getCheckMoves();
         std::vector<Move> getAvoidCapturingMoves();
+        // NOTE: Calling getChangedBoxes returns the array and clears the array contained inside
+        std::vector<std::pair<char, int>> getChangedBoxes();
 
         // possibleMoveExists checks if current player can make any move or not.
         bool possibleMoveExists();
@@ -148,6 +150,7 @@ class Board : public Subject {
         std::vector<Move> capturingMoves;
         std::vector<Move> checkMoves;
         std::vector<Move> avoidCapturingMoves;
+        std::vector<std::pair<char, int>> changedBoxes; 
 
         std::unique_ptr<Piece> & getPointerAt(char file, int rank);
         void resetEnPassant();

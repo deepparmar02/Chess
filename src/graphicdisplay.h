@@ -21,6 +21,7 @@ class GraphicDisplay : public Observer {
         void drawKnight(int x, int y, int colour);
         void drawQueen(int x, int y, int colour);
         void drawKing(int x, int y, int colour);
+        void drawPieceAt(char file, int rank);
 };
 
 #endif
