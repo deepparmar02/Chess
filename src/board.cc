@@ -500,6 +500,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
         // pawn promotion stuff
         bool pawnPromote = false;
         std::unique_ptr<Piece> promotedPiece = promote_to->make_copy();
+        promotedPiece->colour = whose_turn;
 
         if (start_piece->getType() == typePawn) {
             // set en passant-able square
@@ -517,8 +518,9 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             }
 
             // pawn promotion
-            if (end_rank == 8) {
-                if (promotedPiece->getType() == typeEmpty || promotedPiece->getType() == typePawn) {
+            if (end_rank == 8 || end_rank == 1) {
+                Piece::PieceType piece_type = promotedPiece->getType();
+                if (piece_type == typeEmpty || piece_type == typePawn || piece_type == typeKing) {
                     return false;
                 }
                 pawnPromote = true;
@@ -620,7 +622,16 @@ bool Board::possibleMoveExists() {
             auto piece = getPieceAt(i, j);
             std::vector<Move> directional_moves = piece->valid_direction_moves(i, j);
             for (auto move : directional_moves) {
-                if (valid_move(move.start_file, move.start_rank, move.end_file, move.end_rank, false)) {
+                bool valid = true;
+                std::unique_ptr<Piece> promote_piece;
+                if (move.promote_to != ' ')  {
+                    promote_piece = convertToPiece(move.promote_to);
+                    valid = valid_move(move.start_file, move.start_rank, move.end_file, move.end_rank, promote_piece.get(), false);
+                } else {
+                    valid = valid_move(move.start_file, move.start_rank, move.end_file, move.end_rank, false);
+                }
+    
+                if (valid) {
                     // TODO: Does not check if pawn promotion is legal or not, so work on it.
 
                     Piece::PieceColour opponent = whose_turn == White ? Black : White;
@@ -770,10 +781,10 @@ void Board::deletePiece(char file, int rank) {
 }
 
 bool Board::isPawnLastRow() {
-    for (int i = 1; i <=  8; i++) {
-        if (getPieceAt('a', i)->getType() == Piece::PieceType::Pawn ||
-            getPieceAt('h', i)->getType() == Piece::PieceType::Pawn) {
-            return true;;
+    for (char c = 'a'; c <= 'h'; c++) {
+        if (getPieceAt(c, 1)->getType() == Piece::PieceType::Pawn ||
+            getPieceAt(c, 8)->getType() == Piece::PieceType::Pawn) {
+            return true;
         }
     }
     return false;

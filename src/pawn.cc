@@ -37,7 +37,7 @@ bool Pawn::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
     }
 
     if (startCol == endCol) {
-        if (board(startCol, startRow + dir)->getType() != Empty) {
+        if (inBounds(startCol, startRow + dir) && board(startCol, startRow + dir)->getType() != Empty) {
             return false;
         } else if (endRow - startRow == dir) {
             return true;
@@ -68,10 +68,15 @@ std::unique_ptr<Piece> Pawn::make_copy() const {
 
 std::vector<Move> Pawn::valid_direction_moves(char file, int rank) const {
     std::vector<Move> valid_moves;
+    char promotePiece = 'Q';
 
     if (colour == Piece::PieceColour::White) {
         if (inBounds(file, rank + 1)) {
-            valid_moves.emplace_back(file, rank, file, rank + 1);
+            if (rank + 1 == 8) {
+                valid_moves.emplace_back(file, rank, file, rank + 1, promotePiece);
+            } else {
+                valid_moves.emplace_back(file, rank, file, rank + 1);
+            }
         }
         if (inBounds(file, rank + 2)) {
             valid_moves.emplace_back(file, rank, file, rank + 2);
@@ -84,7 +89,11 @@ std::vector<Move> Pawn::valid_direction_moves(char file, int rank) const {
         }  
     } else {
         if (inBounds(file, rank - 1)) {
-            valid_moves.emplace_back(file, rank, file, rank - 1);
+            if (rank - 1 == 1) {
+                valid_moves.emplace_back(file, rank, file, rank - 1, promotePiece);
+            } else {
+                valid_moves.emplace_back(file, rank, file, rank - 1);
+            }
         }
         if (inBounds(file, rank - 2)) {
             valid_moves.emplace_back(file, rank, file, rank - 2);

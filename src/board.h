@@ -28,6 +28,7 @@ class Board : public Subject {
         void defaultSetup();
 
         /* Getters and Setters, sort of */
+        // If 'a' <= file <= 'h' or 1 <= rank <= 8, a std::out_of_range is thrown.
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
@@ -108,6 +109,7 @@ class Board : public Subject {
         void resign();
 
         // isPieceSafe checks if the piece at (file, rank) is safe
+        // 
         bool isPieceSafe(char file, int rank);
 
         // getScore returns the final scores of player1 and 2
