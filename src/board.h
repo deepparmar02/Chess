@@ -26,6 +26,8 @@ class Board : public Subject {
 
         // defaultSetup creates the standard chess setup.
         void defaultSetup();
+        // emptyBoard goes back to a clean, empty board
+        void emptyBoard();
 
         /* Getters and Setters, sort of */
         // If 'a' <= file <= 'h' or 1 <= rank <= 8, a std::out_of_range is thrown.
@@ -101,9 +103,6 @@ class Board : public Subject {
 
         // changeColour makes it 'colour's' turn to go next
         void changeColour(std::string colour);
-
-        // resetBoard goes back to default setup
-        void resetBoard();
 
         // resign concedes the game to the opponent
         void resign();

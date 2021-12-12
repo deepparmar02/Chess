@@ -28,42 +28,6 @@ GraphicDisplay::GraphicDisplay(Board *board_subject) :
             int rank = 8 - j;
             char file = 'a' + i;
             drawPieceAt(file, rank);
-
-            // auto piece = board_subject->getPieceAt(file, rank);
-            // auto pieceColour = piece->getColour();
-            // auto pieceType = piece->getType();
-            // char pieceLetter;
-
-            // int x = i * SQUARE_SIZE;
-            // int y = j * SQUARE_SIZE;
-            // int piece_colour = convert(pieceColour);
-
-            // if (pieceType == Piece::PieceType::King) {
-            //     drawKing(x, y, piece_colour);
-            //     pieceLetter = 'K';
-            // } else if (pieceType == Piece::PieceType::Queen) {
-            //     drawQueen(x, y, piece_colour);
-            //     pieceLetter = 'Q';
-            // } else if (pieceType == Piece::PieceType::Bishop) {
-            //     drawBishop(x, y, piece_colour);
-            //     pieceLetter = 'B';
-            // } else if (pieceType == Piece::PieceType::Rook) {
-            //     drawRook(x, y, piece_colour);
-            //     pieceLetter = 'R';
-            // } else if (pieceType == Piece::PieceType::Knight) {
-            //     drawKnight(x, y, piece_colour);
-            //     pieceLetter = 'N';
-            // } else if (pieceType == Piece::PieceType::Pawn) {
-            //     drawPawn(x, y, piece_colour);
-            //     pieceLetter = 'P';
-            // } else {
-            //     pieceLetter = ' ';
-            // }
-
-            // if (pieceColour == Piece::PieceColour::Black) {
-            //     pieceLetter = tolower(pieceLetter);
-            // }
-
             // screen.drawString(i * SQUARE_SIZE + SQUARE_SIZE / 2, j * SQUARE_SIZE + SQUARE_SIZE / 2, std::string(1, pieceLetter));
         }
     }

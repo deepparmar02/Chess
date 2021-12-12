@@ -3,8 +3,11 @@
 #include <string>
 #include <sstream>
 #include "board.h"
+#include "observer.h"
 #include "textdisplay.h"
 #include "graphicdisplay.h"
+#include "fancyTextDisplay.h"
+
 #include "player.h"
 #include "human.h"
 #include "levelOne.h"
@@ -16,7 +19,17 @@ using namespace std;
 int main() {
     Board board{};
 
-    TextDisplay text{&board};
+    std::unique_ptr<Observer> terminal_display;
+
+    string response;
+    cout << "Enable fancy display?(y/n)" << endl;
+    cin >> response;
+    if (response == "y") {
+       terminal_display = std::make_unique<FancyTextDisplay>(&board);
+    } else{
+       terminal_display = std::make_unique<TextDisplay>(&board);
+    }
+
     GraphicDisplay graphic{&board};
 
     std::vector<std::unique_ptr<Player>> players(2);
@@ -153,6 +166,16 @@ int main() {
                 }
             }
         }
+        //  else if ("fancy" == command) {
+        //     if (board.isGameRunning()) {
+        //         cout << "Game is currently running." << endl;
+        //         continue;
+        //     }
+        //     board.detach(text);
+        // } else if ("text" == command) {
+        //     board.detach(fancy);
+        //     board.detach(text);
+        // }
         else {
             cerr << "Invalid Command" << endl;
         }

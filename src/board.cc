@@ -113,9 +113,14 @@ Board::Board() :
     avoidCapturingMoves{std::vector<Move>{}},
     changedBoxes{std::vector<std::pair<char, int>>{}}
 {
-    for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
-        for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
-            board[r][c] = std::make_unique<Empty>();
+    emptyBoard();
+}
+
+void Board::emptyBoard() {
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            getPointerAt(f, r) = std::make_unique<Empty>();
+            changedBoxes.emplace_back(f, r);
         }
     }
 }
@@ -735,6 +740,7 @@ void Board::isGameOver() {
 }
 
 void Board::resign(){
+    emptyBoard();
     if(whose_turn == Piece::PieceColour::White){
         score2++;
     }else{
@@ -822,10 +828,6 @@ bool Board::isCustomBoard() {
 //     //     return Piece::PieceColour::Black;
 //     // }
 // }
-
-void Board::resetBoard() {
-    defaultSetup();
-}
 
 // char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {
 //     char piece;
