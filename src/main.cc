@@ -18,49 +18,41 @@ int main() {
 
     TextDisplay text{&board};
     GraphicDisplay graphic{&board};
-    // board.notifyObservers();
 
     std::vector<std::unique_ptr<Player>> players(2);
     int turn = 0; // 0 = white, 1 = black
     string command;
     while (cin >> command) {
         if (command == "game") {
-            string whitePlayer, blackPlayer;
-            cin >> whitePlayer >> blackPlayer;
+            // string whitePlayer, blackPlayer;
+            // cin >> whitePlayer >> blackPlayer;
+            bool isValidPlayer = true;
 
-            // if any player is an int, then they are computers
-            istringstream ss{whitePlayer};
-            int whitePlayerLevel, blackPlayerLevel;
-            if (ss >> whitePlayerLevel) {
-                if (whitePlayerLevel == 1) {
-                    players[0] = std::make_unique<LevelOne>(board);
-                } else if (whitePlayerLevel == 2) {
-                    players[0] = std::make_unique<LevelTwo>(board);
-                } else if (whitePlayerLevel == 3) {
-                    players[0] = std::make_unique<LevelThree>(board);
-                } 
-            } else {
-                players[0] = std::make_unique<Human>(board);
-            }
-            ss.clear();
-            ss.str(blackPlayer);
-            if (ss >> blackPlayerLevel) {
-                if (blackPlayerLevel == 1) {
-                    players[1] = std::make_unique<LevelOne>(board);
-                } else if (blackPlayerLevel == 2) {
-                    players[1] = std::make_unique<LevelTwo>(board);
-                } else if (blackPlayerLevel == 3) {
-                    players[1] = std::make_unique<LevelThree>(board);
-                } 
-            } else {
-                players[1] = std::make_unique<Human>(board);
+            for (int i = 0; i <= 1; i++) {
+                string player;
+                cin >> player;
+                if (player == "computer1") {
+                        players[i] = std::make_unique<LevelOne>(board);
+                } else if (player == "computer2") {
+                    players[i] = std::make_unique<LevelTwo>(board);
+                } else if (player == "computer3") {
+                    players[i] = std::make_unique<LevelThree>(board);
+                } else if (player == "human"){
+                    players[i] = std::make_unique<Human>(board);
+                } else {
+                    cout << "Invalid Command - Must be either human or computer[1-4]" << endl;
+                    isValidPlayer = false;
+                    break;
+                }
             }
 
-            if (!board.isCustomBoard()) {
-                board.defaultSetup();
+            if (isValidPlayer) {
+                if (!board.isCustomBoard()) {
+                    board.defaultSetup();
+                }
+                board.setGameRunning();
+                board.notifyObservers();
             }
-            board.setGameRunning();
-            board.notifyObservers();
         }
         else if (command == "resign" || command == "r") {
             if (!board.isGameRunning()) {
@@ -68,7 +60,7 @@ int main() {
                 continue;
             }
             board.resign();
-            if(board.whose_turn == Piece::PieceColour::White){
+            if(board.current_turn() == Piece::PieceColour::White){
                 cout << "Black ";
             }else{
                 cout << "White ";
@@ -91,7 +83,7 @@ int main() {
                 turn = (turn + 1) % 2; // change turns
                 if (board.inCheckmate()) {
                     cout << "Checkmate! ";
-                    if (board.whose_turn == Piece::PieceColour::White) {
+                    if (board.current_turn() == Piece::PieceColour::White) {
                         cout << "Black";
                     } else {
                         cout << "White";
@@ -102,7 +94,7 @@ int main() {
                     cout << "Stalemate" << endl;
                 }
                 else if (board.inCheck()) {
-                    if (board.whose_turn == Piece::PieceColour::White) {
+                    if (board.current_turn() == Piece::PieceColour::White) {
                         cout << "White";
                     } else {
                         cout << "Black";

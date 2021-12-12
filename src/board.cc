@@ -94,11 +94,11 @@ Piece *Board::operator() (char col, int row) const {
 // The internal board setup is that white pieces are on the left, black on the right.
 // a1 is [0][0], etc. up tp h8 which is [7][7]
 Board::Board() : 
-    score1{0},
-    score2{0},
     whose_turn{Piece::PieceColour::White},
     isCheckmate{false},
     isStalemate{false},
+    score1{0},
+    score2{0},
     enteredSetupMode{false},
     isInGame{false},
     white_castle_kingside{false},
@@ -108,7 +108,10 @@ Board::Board() :
     en_passant_file{'\0'},
     en_passant_rank{0},
     allPossibleMoves{std::vector<Move>{}},
-    capturingMoves{std::vector<Move>{}}
+    capturingMoves{std::vector<Move>{}},
+    checkMoves{std::vector<Move>{}},
+    avoidCapturingMoves{std::vector<Move>{}},
+    changedBoxes{std::vector<std::pair<char, int>>{}}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -171,11 +174,11 @@ void Board::defaultSetup() {
 Board::~Board() { /* NOTHING! Unique pointers do it for me. */ }
 
 Board::Board(const Board &other) : 
-    score1{other.score1},
-    score2{other.score2},
     whose_turn{other.whose_turn},
     isCheckmate{other.isCheckmate},
     isStalemate{other.isStalemate},
+    score1{other.score1},
+    score2{other.score2},
     white_castle_kingside{other.white_castle_kingside},
     white_castle_queenside{other.white_castle_queenside},
     black_castle_kingside{other.black_castle_kingside},
@@ -183,7 +186,10 @@ Board::Board(const Board &other) :
     en_passant_file{other.en_passant_file},
     en_passant_rank{other.en_passant_rank},
     allPossibleMoves{other.allPossibleMoves},
-    capturingMoves{other.capturingMoves}
+    capturingMoves{other.capturingMoves},
+    checkMoves{other.checkMoves},
+    avoidCapturingMoves{other.avoidCapturingMoves},
+    changedBoxes{other.changedBoxes}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -219,11 +225,13 @@ Board & Board::operator=(const Board &other) {
 // just to see if it works or not. Don't delete the commented code for now.
 
 Board::Board(Board &&other) : 
-    score1{std::move(other.score1)},
-    score2{std::move(other.score2)},
     whose_turn{std::move(other.whose_turn)},
     isCheckmate{std::move(other.isCheckmate)},
     isStalemate{std::move(other.isStalemate)},
+    score1{std::move(other.score1)},
+    score2{std::move(other.score2)},
+    enteredSetupMode{std::move(other.enteredSetupMode)},
+    isInGame{std::move(other.isInGame)},
     white_castle_kingside{std::move(other.white_castle_kingside)},
     white_castle_queenside{std::move(other.white_castle_queenside)},
     black_castle_kingside{std::move(other.black_castle_kingside)},
@@ -231,7 +239,10 @@ Board::Board(Board &&other) :
     en_passant_file{std::move(other.en_passant_file)},
     en_passant_rank{std::move(other.en_passant_rank)},
     allPossibleMoves{std::move(other.allPossibleMoves)},
-    capturingMoves{std::move(other.capturingMoves)}
+    capturingMoves{std::move(other.capturingMoves)},
+    checkMoves{std::move(other.checkMoves)},
+    avoidCapturingMoves{std::move(other.avoidCapturingMoves)},
+    changedBoxes{std::move(other.changedBoxes)}
 {
     for (int r = 0; r < NUM_OF_SQUARES_PER_SIDE; ++r) {
         for (int c = 0; c < NUM_OF_SQUARES_PER_SIDE; ++c) {
@@ -688,6 +699,10 @@ std::vector<std::pair<char, int>> Board::getChangedBoxes() {
     std::vector<std::pair<char, int>> old_boxes = changedBoxes;
     changedBoxes.clear();
     return old_boxes;
+}
+
+Piece::PieceColour Board::current_turn() {
+    return whose_turn;
 }
 
 void Board::isGameOver() {

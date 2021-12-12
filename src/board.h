@@ -120,11 +120,14 @@ class Board : public Subject {
         // TEMPORARY OUTPUT OPERATOR
         friend std::ostream &operator<<(std::ostream& out, const Board &board);
 
-        
+        // current_turn gives the turn of current player
+        Piece::PieceColour current_turn();
 
-        Piece::PieceColour whose_turn; // for now, I'll make it public
+         // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
+
+        Piece::PieceColour whose_turn;
 
         bool isCheckmate;
         bool isStalemate;
@@ -132,7 +135,7 @@ class Board : public Subject {
         // Scores of player 1 and player 2
         int score1;
         int score2;
-
+        
         bool enteredSetupMode;
         bool isInGame;
 

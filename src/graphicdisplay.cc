@@ -141,7 +141,6 @@ void GraphicDisplay::drawPieceAt(char file, int rank) {
     auto piece = board_subject->getPieceAt(file, rank);
     auto pieceColour = piece->getColour();
     auto pieceType = piece->getType();
-    char pieceLetter;
 
     int x = (file - 'a') * SQUARE_SIZE;
     int y = (8 - rank) * SQUARE_SIZE;
@@ -149,24 +148,16 @@ void GraphicDisplay::drawPieceAt(char file, int rank) {
 
     if (pieceType == Piece::PieceType::King) {
         drawKing(x, y, piece_colour);
-        pieceLetter = 'K';
     } else if (pieceType == Piece::PieceType::Queen) {
         drawQueen(x, y, piece_colour);
-        pieceLetter = 'Q';
     } else if (pieceType == Piece::PieceType::Bishop) {
         drawBishop(x, y, piece_colour);
-        pieceLetter = 'B';
     } else if (pieceType == Piece::PieceType::Rook) {
         drawRook(x, y, piece_colour);
-        pieceLetter = 'R';
     } else if (pieceType == Piece::PieceType::Knight) {
         drawKnight(x, y, piece_colour);
-        pieceLetter = 'N';
     } else if (pieceType == Piece::PieceType::Pawn) {
         drawPawn(x, y, piece_colour);
-        pieceLetter = 'P';
-    } else {
-        pieceLetter = ' ';
     }
 }
 
