@@ -133,12 +133,15 @@ void Board::defaultSetup() {
     for (char c = 'a'; c <= 'h'; ++c) {
         getPointerAt(c, 2) = std::make_unique<Pawn>(Piece::PieceColour::White);
         getPointerAt(c, 7) = std::make_unique<Pawn>(Piece::PieceColour::Black);
+        changedBoxes.emplace_back(c, 2);
+        changedBoxes.emplace_back(c, 7);
     }
 
     // empty setup
     for (char d = 'a'; d <= 'h'; ++d) {
         for (char r = 3; r <= 6; ++r) {
             getPointerAt(d, r) = std::make_unique<Empty>();
+            changedBoxes.emplace_back(d, r);
         }
     }
 
@@ -158,6 +161,9 @@ void Board::defaultSetup() {
         getPointerAt('f', i) = std::make_unique<Bishop>(colour);
         getPointerAt('g', i) = std::make_unique<Knight>(colour);
         getPointerAt('h', i) = std::make_unique<Rook>(colour);
+        for (char c = 'a'; c <= 'h'; c++) {
+            changedBoxes.emplace_back(c, i);
+        }
     }
     isGameOver();
 }
@@ -259,6 +265,7 @@ Board & Board::operator=(Board &&other) {
 }
 
 void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
+    changedBoxes.emplace_back(file, rank);
     auto newPiece = piece->make_copy();
     std::swap(newPiece, getPointerAt(file, rank));
 }
@@ -462,6 +469,8 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             // If that is satisfied, we will move the king down 
             // at line 430 for real (if modify_board is true). 
             // Else, we don't move and it's false.
+
+            // move_check, if valid, will add the changed boxes.
             castling = !inCheck() && !move_check(start_file, start_rank, mid_file, end_rank, false, whose_turn);
             if (!castling) {
                 return false;
@@ -513,6 +522,10 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
 
         if (no_check && modify_board) {
             // ONLY MAKE CHANGES TO THE BOARD HERE.
+            
+            changedBoxes.emplace_back(start_file, start_rank);
+            changedBoxes.emplace_back(end_file, end_rank);
+            
             // you promote to a new piece
             if (pawnPromote) {
                 getPointerAt(end_file, end_rank) = std::move(promotedPiece);
@@ -520,11 +533,16 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             // you move the rook to finish castling
             if (castling) {
                 std::swap(getPointerAt(rook_start, castleRank), getPointerAt(rook_end, castleRank));
+                changedBoxes.emplace_back(rook_start, castleRank);
+                changedBoxes.emplace_back(rook_end, castleRank);
             }
             // if two-square pawn move is sucessful, you set future enpassant square
             if (pawnTwoSqaures) {
                 en_passant_file = future_en_passant_file;
                 en_passant_rank = future_en_passant_rank;
+            }
+            if (enPassant) {
+                changedBoxes.emplace_back(end_file, start_rank);
             }
             after_move_housekeeping();
         } else {
@@ -664,6 +682,12 @@ std::vector<Move> Board::getCheckMoves() {
 
 std::vector<Move> Board::getAvoidCapturingMoves() {
     return avoidCapturingMoves;
+}
+
+std::vector<std::pair<char, int>> Board::getChangedBoxes() {
+    std::vector<std::pair<char, int>> old_boxes = changedBoxes;
+    changedBoxes.clear();
+    return old_boxes;
 }
 
 void Board::isGameOver() {

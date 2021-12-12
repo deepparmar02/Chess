@@ -17,7 +17,7 @@ int main() {
     Board board{};
 
     TextDisplay text{&board};
-    // GraphicDisplay graphic{&board};
+    GraphicDisplay graphic{&board};
     // board.notifyObservers();
 
     std::vector<std::unique_ptr<Player>> players(2);

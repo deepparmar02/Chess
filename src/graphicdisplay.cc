@@ -2,6 +2,7 @@
 #include "window.h"
 #include "board.h"
 #include <string>
+#include <vector>
 
 const int SQUARE_SIZE = 60;
 const int PIECE_SIZE = 100;
@@ -12,6 +13,60 @@ GraphicDisplay::GraphicDisplay(Board *board_subject) :
     screen{SQUARE_SIZE * BOARD_SIZE, SQUARE_SIZE * BOARD_SIZE}
 {
     board_subject->attach(this);
+    for (int i = 0; i < BOARD_SIZE; ++i) {
+        for (int j = 0; j < BOARD_SIZE; ++j) {
+
+            int square_colour;
+            if ((i + j) % 2 == 0) {
+                square_colour = Xwindow::Orange;
+            } else {
+                square_colour = Xwindow::Brown;
+            }
+
+            screen.fillRectangle(i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE, square_colour);
+
+            int rank = 8 - j;
+            char file = 'a' + i;
+            drawPieceAt(file, rank);
+
+            // auto piece = board_subject->getPieceAt(file, rank);
+            // auto pieceColour = piece->getColour();
+            // auto pieceType = piece->getType();
+            // char pieceLetter;
+
+            // int x = i * SQUARE_SIZE;
+            // int y = j * SQUARE_SIZE;
+            // int piece_colour = convert(pieceColour);
+
+            // if (pieceType == Piece::PieceType::King) {
+            //     drawKing(x, y, piece_colour);
+            //     pieceLetter = 'K';
+            // } else if (pieceType == Piece::PieceType::Queen) {
+            //     drawQueen(x, y, piece_colour);
+            //     pieceLetter = 'Q';
+            // } else if (pieceType == Piece::PieceType::Bishop) {
+            //     drawBishop(x, y, piece_colour);
+            //     pieceLetter = 'B';
+            // } else if (pieceType == Piece::PieceType::Rook) {
+            //     drawRook(x, y, piece_colour);
+            //     pieceLetter = 'R';
+            // } else if (pieceType == Piece::PieceType::Knight) {
+            //     drawKnight(x, y, piece_colour);
+            //     pieceLetter = 'N';
+            // } else if (pieceType == Piece::PieceType::Pawn) {
+            //     drawPawn(x, y, piece_colour);
+            //     pieceLetter = 'P';
+            // } else {
+            //     pieceLetter = ' ';
+            // }
+
+            // if (pieceColour == Piece::PieceColour::Black) {
+            //     pieceLetter = tolower(pieceLetter);
+            // }
+
+            // screen.drawString(i * SQUARE_SIZE + SQUARE_SIZE / 2, j * SQUARE_SIZE + SQUARE_SIZE / 2, std::string(1, pieceLetter));
+        }
+    }
 }
 
 int convert(Piece::PieceColour colour) {
@@ -66,58 +121,52 @@ void GraphicDisplay::drawKnight(int x, int y, int colour) {
 }
 
 void GraphicDisplay::notify() {
-    for (int i = 0; i < BOARD_SIZE; ++i) {
-        for (int j = 0; j < BOARD_SIZE; ++j) {
+    std::vector<std::pair<char, int>> changedBoxes = board_subject->getChangedBoxes();
+    for (auto square : changedBoxes) {
+        int i = square.first - 'a';
+        int j = 8 - square.second;
 
-            int square_colour;
-            if ((i + j) % 2 == 0) {
-                square_colour = Xwindow::Orange;
-            } else {
-                square_colour = Xwindow::Brown;
-            }
-
-            screen.fillRectangle(i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE, square_colour);
-
-            int rank = 8 - j;
-            char file = 'a' + i;
-
-            auto piece = board_subject->getPieceAt(file, rank);
-            auto pieceColour = piece->getColour();
-            auto pieceType = piece->getType();
-            char pieceLetter;
-
-            int x = i * SQUARE_SIZE;
-            int y = j * SQUARE_SIZE;
-            int piece_colour = convert(pieceColour);
-
-            if (pieceType == Piece::PieceType::King) {
-                drawKing(x, y, piece_colour);
-                pieceLetter = 'K';
-            } else if (pieceType == Piece::PieceType::Queen) {
-                drawQueen(x, y, piece_colour);
-                pieceLetter = 'Q';
-            } else if (pieceType == Piece::PieceType::Bishop) {
-                drawBishop(x, y, piece_colour);
-                pieceLetter = 'B';
-            } else if (pieceType == Piece::PieceType::Rook) {
-                drawRook(x, y, piece_colour);
-                pieceLetter = 'R';
-            } else if (pieceType == Piece::PieceType::Knight) {
-                drawKnight(x, y, piece_colour);
-                pieceLetter = 'N';
-            } else if (pieceType == Piece::PieceType::Pawn) {
-                drawPawn(x, y, piece_colour);
-                pieceLetter = 'P';
-            } else {
-                pieceLetter = ' ';
-            }
-
-            if (pieceColour == Piece::PieceColour::Black) {
-                pieceLetter = tolower(pieceLetter);
-            }
-
-            // screen.drawString(i * SQUARE_SIZE + SQUARE_SIZE / 2, j * SQUARE_SIZE + SQUARE_SIZE / 2, std::string(1, pieceLetter));
+        int square_colour;
+        if ((i + j) % 2 == 0) {
+            square_colour = Xwindow::Orange;
+        } else {
+            square_colour = Xwindow::Brown;
         }
+        screen.fillRectangle(i * SQUARE_SIZE, j * SQUARE_SIZE, SQUARE_SIZE, SQUARE_SIZE, square_colour);
+        drawPieceAt(square.first, square.second);
+    }
+}
+
+void GraphicDisplay::drawPieceAt(char file, int rank) {
+    auto piece = board_subject->getPieceAt(file, rank);
+    auto pieceColour = piece->getColour();
+    auto pieceType = piece->getType();
+    char pieceLetter;
+
+    int x = (file - 'a') * SQUARE_SIZE;
+    int y = (8 - rank) * SQUARE_SIZE;
+    int piece_colour = convert(pieceColour);
+
+    if (pieceType == Piece::PieceType::King) {
+        drawKing(x, y, piece_colour);
+        pieceLetter = 'K';
+    } else if (pieceType == Piece::PieceType::Queen) {
+        drawQueen(x, y, piece_colour);
+        pieceLetter = 'Q';
+    } else if (pieceType == Piece::PieceType::Bishop) {
+        drawBishop(x, y, piece_colour);
+        pieceLetter = 'B';
+    } else if (pieceType == Piece::PieceType::Rook) {
+        drawRook(x, y, piece_colour);
+        pieceLetter = 'R';
+    } else if (pieceType == Piece::PieceType::Knight) {
+        drawKnight(x, y, piece_colour);
+        pieceLetter = 'N';
+    } else if (pieceType == Piece::PieceType::Pawn) {
+        drawPawn(x, y, piece_colour);
+        pieceLetter = 'P';
+    } else {
+        pieceLetter = ' ';
     }
 }
 
