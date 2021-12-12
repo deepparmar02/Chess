@@ -24,7 +24,7 @@ int main() {
     int turn = 0; // 0 = white, 1 = black
     string command;
     while (cin >> command) {
-        if (command == "game" || command == "g") {
+        if (command == "game") {
             string whitePlayer, blackPlayer;
             cin >> whitePlayer >> blackPlayer;
 
@@ -158,4 +158,8 @@ int main() {
             cerr << "Invalid Command" << endl;
         }
     }
+
+    cout << "Final Score:" << endl;
+    cout << "White: " << board.getScore1()<< endl;
+    cout << "Black: " << board.getScore2() << endl;
 }

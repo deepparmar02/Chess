@@ -119,8 +119,6 @@ Board::Board() :
 
 void Board::defaultSetup() {
     //default state values
-    score1 = 0;
-    score2 = 0;
     whose_turn = Piece::PieceColour::White;
     en_passant_file = '\0';
     en_passant_rank = 0;
@@ -544,6 +542,14 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
     } else {
         return false;
     }
+}
+
+int Board::getScore1(){
+    return score1;
+}
+
+int Board::getScore2(){
+    return score2;
 }
 
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to) {

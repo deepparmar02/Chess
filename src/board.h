@@ -108,15 +108,17 @@ class Board : public Subject {
         // isPieceSafe checks if the piece at (file, rank) is safe
         bool isPieceSafe(char file, int rank);
 
+        // getScore returns the final scores of player1 and 2
+        int getScore1();
+        int getScore2();
+
         // winner returns the colour of the winner
         // Piece::PieceColour winner();
 
         // TEMPORARY OUTPUT OPERATOR
         friend std::ostream &operator<<(std::ostream& out, const Board &board);
 
-        // Scores of player 1 and player 2
-        int score1;
-        int score2;
+        
 
         Piece::PieceColour whose_turn; // for now, I'll make it public
     private:
@@ -124,6 +126,10 @@ class Board : public Subject {
 
         bool isCheckmate;
         bool isStalemate;
+
+        // Scores of player 1 and player 2
+        int score1;
+        int score2;
 
         bool enteredSetupMode;
         bool isInGame;
