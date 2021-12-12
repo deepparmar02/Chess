@@ -62,6 +62,7 @@ int main() {
             if (isValidPlayer) {
                 if (!board.isCustomBoard()) {
                     board.defaultSetup();
+                    turn = 0;
                 }
                 board.setGameRunning();
                 board.notifyObservers();
