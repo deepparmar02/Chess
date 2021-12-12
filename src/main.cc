@@ -62,7 +62,7 @@ int main() {
             if (isValidPlayer) {
                 if (!board.isCustomBoard()) {
                     board.defaultSetup();
-                    turn = 0;
+                    turn = 0; // default setup means white plays first.
                 }
                 board.setGameRunning();
                 board.notifyObservers();
@@ -124,6 +124,8 @@ int main() {
             }
             board.notifyObservers();
             board.enterSetupMode();
+            // turn = 0; // apparently by default, when you enter setup mode
+            // the default is that it's white's turn.
             string setupCmd;
             while (cin >> setupCmd) {
                 if (setupCmd == "+") {
@@ -148,9 +150,9 @@ int main() {
 
                     board.changeColour(colour);
                     if ("white" == colour) {
-                        turn = 0;
+                        turn = 0; // if white, we use 1st player ptr
                     } else if ("black" == colour) {
-                        turn = 1;
+                        turn = 1; // if black, we use 2nd player ptr
                     } else {
                         cout << "Invalid colour" << endl;
                     }
