@@ -89,6 +89,7 @@ int main() {
             }
 
             // Human handles input. Computer doesn't need to.
+            // Exception handling for make_move.
             Move move_made;
             try {
                 move_made = players[turn]->make_move();
@@ -97,7 +98,7 @@ int main() {
                 cout << nomove.message << endl;
                 continue;
             }
-            // if promote move
+            // Exception handling for move
             bool valid_move;
             try {
                 valid_move = board.move(move_made);
