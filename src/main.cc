@@ -191,6 +191,6 @@ int main() {
     }
 
     cout << "Final Score:" << endl;
-    cout << "White: " << board.getScore1()<< endl;
+    cout << "White: " << board.getScore1() << endl;
     cout << "Black: " << board.getScore2() << endl;
 }

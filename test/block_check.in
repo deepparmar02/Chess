@@ -1,3 +1,4 @@
+n
 setup
 + K a8
 + r h5
@@ -6,6 +7,6 @@ setup
 + k a1
 = black
 done
-game 3 h
+game computer3 human
 move h5 h8
 move
