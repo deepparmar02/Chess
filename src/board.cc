@@ -10,6 +10,7 @@
 #include "move.h"
 #include <iostream>
 #include <utility>
+#include <algorithm>
 using namespace std;
 
 const int NUM_OF_SQUARES_PER_SIDE = 8;
@@ -113,16 +114,26 @@ Board::Board() :
     avoidCapturingMoves{std::vector<Move>{}},
     changedBoxes{std::vector<std::pair<char, int>>{}}
 {
-    emptyBoard();
+    emptyBoardChange(false);
+}
+
+void Board::emptyBoardChange(bool announce_change) {
+    for (char f = 'a'; f <= 'h'; ++f) {
+        for (int r = 1; r <= 8; ++r) {
+            auto new_piece = std::make_unique<Empty>();
+            if (announce_change) {
+                setPieceAt(f, r, std::move(new_piece));
+            } else {
+                getPointerAt(f, r) = std::make_unique<Empty>();
+            }
+        }
+    }
 }
 
 void Board::emptyBoard() {
-    for (char f = 'a'; f <= 'h'; ++f) {
-        for (int r = 1; r <= 8; ++r) {
-            getPointerAt(f, r) = std::make_unique<Empty>();
-            changedBoxes.emplace_back(f, r);
-        }
-    }
+    enteredSetupMode = true;
+    emptyBoardChange(true);
+    enteredSetupMode = false;
 }
 
 void Board::defaultSetup() {
@@ -137,19 +148,17 @@ void Board::defaultSetup() {
     black_castle_kingside = true;
     black_castle_queenside = true;
 
+    enteredSetupMode = true;
     // pawn setup
     for (char c = 'a'; c <= 'h'; ++c) {
-        getPointerAt(c, 2) = std::make_unique<Pawn>(Piece::PieceColour::White);
-        getPointerAt(c, 7) = std::make_unique<Pawn>(Piece::PieceColour::Black);
-        changedBoxes.emplace_back(c, 2);
-        changedBoxes.emplace_back(c, 7);
+        setPieceAt(c, 2, std::make_unique<Pawn>(Piece::PieceColour::White));
+        setPieceAt(c, 7, std::make_unique<Pawn>(Piece::PieceColour::Black));
     }
 
     // empty setup
     for (char d = 'a'; d <= 'h'; ++d) {
         for (char r = 3; r <= 6; ++r) {
-            getPointerAt(d, r) = std::make_unique<Empty>();
-            changedBoxes.emplace_back(d, r);
+            setPieceAt(d, r, std::make_unique<Empty>());
         }
     }
 
@@ -161,18 +170,16 @@ void Board::defaultSetup() {
         } else {
             colour = Piece::PieceColour::Black;
         }
-        getPointerAt('a', i) = std::make_unique<Rook>(colour);
-        getPointerAt('b', i) = std::make_unique<Knight>(colour);
-        getPointerAt('c', i) = std::make_unique<Bishop>(colour);
-        getPointerAt('d', i) = std::make_unique<Queen>(colour);
-        getPointerAt('e', i) = std::make_unique<King>(colour);
-        getPointerAt('f', i) = std::make_unique<Bishop>(colour);
-        getPointerAt('g', i) = std::make_unique<Knight>(colour);
-        getPointerAt('h', i) = std::make_unique<Rook>(colour);
-        for (char c = 'a'; c <= 'h'; c++) {
-            changedBoxes.emplace_back(c, i);
-        }
+        setPieceAt('a', i, std::make_unique<Rook>(colour));
+	setPieceAt('b', i, std::make_unique<Knight>(colour));
+	setPieceAt('c', i, std::make_unique<Bishop>(colour));
+	setPieceAt('d', i, std::make_unique<Queen>(colour));
+	setPieceAt('e', i, std::make_unique<King>(colour));
+	setPieceAt('f', i, std::make_unique<Bishop>(colour));
+	setPieceAt('g', i, std::make_unique<Knight>(colour));
+	setPieceAt('h', i, std::make_unique<Rook>(colour));
     }
+    enteredSetupMode = false;
     isGameOver();
 }
 
@@ -281,12 +288,20 @@ Board & Board::operator=(Board &&other) {
 }
 
 void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
-    if (!enteredSetupMode) {
-        return;
+   if (!enteredSetupMode) {
+   	   return;
     }
-    changedBoxes.emplace_back(file, rank);
     auto newPiece = piece->make_copy();
-    std::swap(newPiece, getPointerAt(file, rank));
+    auto & originalPiece = getPointerAt(file, rank);
+    if (originalPiece.get() == nullptr || 
+        originalPiece->getColour() != newPiece->getColour() || 
+        originalPiece->getType() != newPiece->getType()) {
+	std::pair<char, int> square{file, rank};
+	if (std::find(changedBoxes.begin(), changedBoxes.end(), square) == changedBoxes.end()) {
+            changedBoxes.emplace_back(file, rank);
+	}
+    }
+    std::swap(newPiece, originalPiece);
 }
 
 bool Board::inCheck() {
@@ -825,7 +840,19 @@ void Board::setGameRunning(){
 }
 
 bool Board::endSetupMode() {
-    if (!isPawnLastRow() && isTwoKings() && !inCheck()) {
+    // temporary variable to store current player turn
+    Piece::PieceColour cur_player = whose_turn;
+
+    // checks if white king is in check
+    whose_turn = Piece::PieceColour::White;
+    bool white_check = inCheck();
+
+    // checks if black king is in check
+    whose_turn = Piece::PieceColour::Black;
+    bool black_check = inCheck();
+
+    whose_turn = cur_player; // set back to normal
+    if (!isPawnLastRow() && isTwoKings() && !white_check && !black_check) {
         isGameOver();
         return true;
     }

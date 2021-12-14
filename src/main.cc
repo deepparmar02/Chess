@@ -30,7 +30,7 @@ int main() {
        terminal_display = std::make_unique<TextDisplay>(&board);
     }
 
-    // GraphicDisplay graphic{&board};
+    GraphicDisplay graphic{&board};
 
     std::vector<std::unique_ptr<Player>> players(2);
     int turn = 0; // 0 = white, 1 = black

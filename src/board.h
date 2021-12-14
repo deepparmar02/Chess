@@ -170,6 +170,7 @@ class Board : public Subject {
         bool valid_move(char start_file, int start_rank, char end_file, int end_rank, bool modify_board);
         void after_move_housekeeping();
         bool move_safe(char start_file, int start_rank, char end_file, int end_rank);
+        void emptyBoardChange(bool announce_change);
 
         // for now, we use friend. breaks encapsulation but easy to write and test
         friend class Pawn;
