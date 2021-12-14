@@ -30,7 +30,7 @@ int main() {
        terminal_display = std::make_unique<TextDisplay>(&board);
     }
 
-    GraphicDisplay graphic{&board};
+    // GraphicDisplay graphic{&board};
 
     std::vector<std::unique_ptr<Player>> players(2);
     int turn = 0; // 0 = white, 1 = black
@@ -149,11 +149,12 @@ int main() {
                     string colour;
                     cin >> colour;
 
-                    board.changeColour(colour);
                     if ("white" == colour) {
                         turn = 0; // if white, we use 1st player ptr
+                        board.changeColour(Piece::PieceColour::White);
                     } else if ("black" == colour) {
                         turn = 1; // if black, we use 2nd player ptr
+                        board.changeColour(Piece::PieceColour::Black);
                     } else {
                         cout << "Invalid colour" << endl;
                     }
@@ -176,6 +177,6 @@ int main() {
     }
 
     cout << "Final Score:" << endl;
-    cout << "White: " << board.getScore1()<< endl;
-    cout << "Black: " << board.getScore2() << endl;
+    cout << "White: " << board.getScoreWhite() << endl;
+    cout << "Black: " << board.getScoreBlack() << endl;
 }
