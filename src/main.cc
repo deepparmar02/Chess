@@ -35,6 +35,9 @@ int main() {
     std::vector<std::unique_ptr<Player>> players(2);
     int turn = 0; // 0 = white, 1 = black
     string command;
+
+    std::string outside_board_err{"Square out of bounds. Try again."};
+
     while (cin >> command) {
         if (command == "game") {
             // string whitePlayer, blackPlayer;
@@ -103,7 +106,7 @@ int main() {
             try {
                 valid_move = board.move(move_made);
             } catch (std::out_of_range &outside) {
-                cout << "Squares out of bounds. Try again" << endl;
+                cout << outside_board_err << endl;
                 cout << outside.what() << endl;
                 continue;
             }
@@ -148,8 +151,13 @@ int main() {
                     char piece, col;
                     int row;
                     cin >> piece >> col >> row;
-
-                    board.addPiece(col, row, piece);
+                    
+                    try {
+                        board.addPiece(col, row, piece);
+                    } catch (std::out_of_range &outside) {
+                        cout << outside_board_err << endl;
+                        cout << outside.what() << endl;
+                    }
                     board.notifyObservers();
                 }
                 else if (setupCmd == "-") {
@@ -157,7 +165,12 @@ int main() {
                     int row;
                     cin >> col >> row;
 
-                    board.deletePiece(col, row);
+                    try {
+                        board.deletePiece(col, row);
+                    } catch (std::out_of_range &outside) {
+                        cout << outside_board_err << endl;
+                        cout << outside.what() << endl;
+                    }
                     board.notifyObservers();
                 }
                 else if (setupCmd == "=") {

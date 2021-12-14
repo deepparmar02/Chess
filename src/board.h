@@ -29,8 +29,12 @@ class Board : public Subject {
         // emptyBoard goes back to a clean, empty board
         void emptyBoard();
 
+        // Note: for arguments taking file and rank,
+        // If 'a' <= file <= 'h' or 1 <= rank <= 8, a std::out_of_range 
+        // is thrown. This applies to getPieceAt, operator(), setPieceAt,
+        // add_piece, delete_piece, and isPieceSafe
+
         /* Getters and Setters, sort of */
-        // If 'a' <= file <= 'h' or 1 <= rank <= 8, a std::out_of_range is thrown.
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
@@ -41,7 +45,6 @@ class Board : public Subject {
          * valid move (true) or invalid (false) as a boolean, and if true
          * make the move on the board
          */
-        // bool move(Move &given_move);
         bool move(char start_file, int start_rank, char end_file, int end_rank);
         bool move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to);
         bool move(Move &move);
