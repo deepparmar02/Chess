@@ -97,8 +97,8 @@ Board::Board() :
     whose_turn{Piece::PieceColour::White},
     isCheckmate{false},
     isStalemate{false},
-    score1{0},
-    score2{0},
+    score_white{0},
+    score_black{0},
     enteredSetupMode{false},
     isInGame{false},
     white_castle_kingside{false},
@@ -182,8 +182,8 @@ Board::Board(const Board &other) :
     whose_turn{other.whose_turn},
     isCheckmate{other.isCheckmate},
     isStalemate{other.isStalemate},
-    score1{other.score1},
-    score2{other.score2},
+    score_white{other.score_white},
+    score_black{other.score_black},
     white_castle_kingside{other.white_castle_kingside},
     white_castle_queenside{other.white_castle_queenside},
     black_castle_kingside{other.black_castle_kingside},
@@ -233,8 +233,8 @@ Board::Board(Board &&other) :
     whose_turn{std::move(other.whose_turn)},
     isCheckmate{std::move(other.isCheckmate)},
     isStalemate{std::move(other.isStalemate)},
-    score1{std::move(other.score1)},
-    score2{std::move(other.score2)},
+    score_white{std::move(other.score_white)},
+    score_black{std::move(other.score_black)},
     enteredSetupMode{std::move(other.enteredSetupMode)},
     isInGame{std::move(other.isInGame)},
     white_castle_kingside{std::move(other.white_castle_kingside)},
@@ -258,8 +258,8 @@ Board::Board(Board &&other) :
 
 Board & Board::operator=(Board &&other) {
     if (this != &other) {
-        std::swap(score1, other.score1);
-        std::swap(score2, other.score2);
+        std::swap(score_white, other.score_white);
+        std::swap(score_black, other.score_black);
         std::swap(whose_turn, other.whose_turn);
         std::swap(isCheckmate, other.isCheckmate);
         std::swap(isStalemate, other.isStalemate);
@@ -281,6 +281,9 @@ Board & Board::operator=(Board &&other) {
 }
 
 void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
+    if (!enteredSetupMode) {
+        return;
+    }
     changedBoxes.emplace_back(file, rank);
     auto newPiece = piece->make_copy();
     std::swap(newPiece, getPointerAt(file, rank));
@@ -438,6 +441,9 @@ bool Board::move_safe(char start_file, int start_rank, char end_file, int end_ra
 // If modify_board is false, it retains the state of the board.
 bool Board::valid_move(char start_file, int start_rank, char end_file, int end_rank, 
                        Piece *promote_to, bool modify_board) {
+    if (!isInGame && modify_board) {
+        return false;
+    }
     std::unique_ptr<Piece> & start_piece = getPointerAt(start_file, start_rank);
 
     // if you're not touching your own piece.
@@ -483,7 +489,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             // king must not be in check and moving to first intermediate square 
             // also does not get you in check.
             // If that is satisfied, we will move the king down 
-            // at line 430 for real (if modify_board is true). 
+            // (if modify_board is true). 
             // Else, we don't move and it's false.
 
             // move_check, if valid, will add the changed boxes.
@@ -539,7 +545,7 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
             }
         }
 
-        // regardless of en passant or pawn promotion or castling, from line 473 - 488
+        // regardless of en passant or pawn promotion or castling
         // this is the default way to check if your move is valid or not.
         bool no_check = !move_check(start_file, start_rank, end_file, end_rank, modify_board, whose_turn);
         // NOTE: IF MOVE IS UNSUCESSFUL, YOU LEAVE ALL BOARD STATES AS IS.
@@ -587,12 +593,12 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
     }
 }
 
-int Board::getScore1(){
-    return score1;
+double Board::getScoreWhite(){
+    return score_white;
 }
 
-int Board::getScore2(){
-    return score2;
+double Board::getScoreBlack(){
+    return score_black;
 }
 
 bool Board::move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to) {
@@ -733,13 +739,15 @@ void Board::isGameOver() {
     if (!hasValidMoves) {
         if (inCheck()) {
             isCheckmate = true;
+            if (whose_turn == Piece::PieceColour::White){
+                score_black++;
+            } else {
+                score_white++;
+            }
         } else {
             isStalemate = true;
-        }
-        if(whose_turn == Piece::PieceColour::White){
-            score2++;
-        }else{
-            score1++;
+            score_black += 0.5;
+            score_white += 0.5;
         }
         enteredSetupMode = false;
         isInGame = false;
@@ -748,10 +756,10 @@ void Board::isGameOver() {
 
 void Board::resign(){
     emptyBoard();
-    if(whose_turn == Piece::PieceColour::White){
-        score2++;
-    }else{
-        score1++;
+    if (whose_turn == Piece::PieceColour::White) {
+        score_black++;
+    } else {
+        score_white++;
     }
     isInGame = false;
     enteredSetupMode = false;
@@ -777,11 +785,12 @@ bool Board::isTwoKings() {
     return (whiteKings == 1 && blackKings == 1);
 }
 
-void Board::changeColour(string colour){
-    if(colour == "white"){
-        whose_turn = Piece::PieceColour::White;
-    }else{
-        whose_turn = Piece::PieceColour::Black;
+void Board::changeColour(Piece::PieceColour colour){
+    if (colour != Piece::PieceColour::White || colour != Piece::PieceColour::Black) {
+        return;
+    }
+    if (enteredSetupMode) {
+        whose_turn = colour;
     }
 }
 
@@ -816,10 +825,6 @@ void Board::setGameRunning(){
 }
 
 bool Board::endSetupMode() {
-    // NOTE TO DEEP AND VANSH: I checked in the specification
-    // that neither king is in check, and endSetupMode doesn't
-    // do that. Therefore, I fixed this part.
-
     // temporary variable to store current player turn
     Piece::PieceColour cur_player = whose_turn;
 
@@ -842,65 +847,3 @@ bool Board::endSetupMode() {
 bool Board::isCustomBoard() {
     return enteredSetupMode;
 }
-
-// Piece::PieceColour Board::winner() {
-//     return Piece::PieceColour::NoColour;
-//     // if (/* */) {
-//     //     return Piece::PieceColour::White;
-//     // } else {
-//     //     return Piece::PieceColour::Black;
-//     // }
-// }
-
-// char initializeBoardPiece(Piece::PieceType pieceType, Piece::PieceColour colour) {
-//     char piece;
-//     if (pieceType == Piece::King) {
-//         piece = 'K';
-//     } else if (pieceType == Piece::Queen) {
-//         piece = 'Q';
-//     } else if (pieceType == Piece::Rook) {
-//         piece = 'R';
-//     } else if (pieceType == Piece::Bishop) {
-//         piece = 'B';
-//     } else if (pieceType == Piece::Knight) {
-//         piece = 'N';
-//     } else {
-//         piece = 'P';
-//     }
-
-//     // if Black piece, then change to lower case
-//     if (colour == Piece::Black) {
-//         piece = tolower(piece);
-//     }
-//     return piece;
-// }
-
-std::ostream &operator<<(std::ostream& out, const Board & board) {
-    // start with top right square being the Piece::PieceColour::white square
-
-    // for (int i = 8; i >= 1; i--) {
-    //     int startWithWhite = 0;
-    //     if (i % 2 != 0) startWithWhite = 1; 
-        
-    //     out << i << " ";
-    //     for (int j = 0; j < NUM_OF_SQUARES_PER_SIDE; j++) {
-    //         Piece * piece = board.getPieceAt(j + 'a', i);
-    //         if (piece->getType() != Piece::Empty) {
-    //             out << initializeBoardPiece(piece->getType(), piece->getColour());
-    //         } else {
-    //             if (j % 2 == startWithWhite) {
-    //                 out << "_";
-    //             } else {
-    //                 out << " ";
-    //             }
-    //         }
-    //     }
-    //     out << endl;
-    // }
-
-    // out << endl;
-    // out << "  abcdefgh" << endl;
-
-    return out;
-}
-

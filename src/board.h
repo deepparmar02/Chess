@@ -38,12 +38,16 @@ class Board : public Subject {
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
+
+        // will not work if isCustomBoard is false.
         void setPieceAt(char file, int rank, std::unique_ptr<Piece> piece);
 
         /**
          * move takes in the start and end squares, returns if it is
          * valid move (true) or invalid (false) as a boolean, and if true
          * make the move on the board
+         * 
+         * will not work if isGameRunning is false
          */
         bool move(char start_file, int start_rank, char end_file, int end_rank);
         bool move(char start_file, int start_rank, char end_file, int end_rank, Piece *promote_to);
@@ -99,35 +103,30 @@ class Board : public Subject {
         bool isGameRunning();
 
         // addPiece adds the piece at (file, rank)
+        // won't work when not in setup mode
         void addPiece(char file, int rank, char piece);
 
         // deletePiece deletes piece at (file, rank)
+        // won't work when not in setup mode
         void deletePiece(char file, int rank);
 
         // changeColour makes it 'colour's' turn to go next
-        void changeColour(std::string colour);
+        // won't work when not in setup mode
+        void changeColour(Piece::PieceColour colour);
 
         // resign concedes the game to the opponent
         void resign();
 
         // isPieceSafe checks if the piece at (file, rank) is safe
-        // 
         bool isPieceSafe(char file, int rank);
 
-        // getScore returns the final scores of player1 and 2
-        int getScore1();
-        int getScore2();
-
-        // winner returns the colour of the winner
-        // Piece::PieceColour winner();
-
-        // TEMPORARY OUTPUT OPERATOR
-        friend std::ostream &operator<<(std::ostream& out, const Board &board);
+        // getScore returns the final scores of white and black
+        double getScoreWhite();
+        double getScoreBlack();
 
         // current_turn gives the turn of current player
         Piece::PieceColour current_turn();
 
-         // for now, I'll make it public
     private:
         std::unique_ptr<Piece> board[8][8];
 
@@ -136,9 +135,9 @@ class Board : public Subject {
         bool isCheckmate;
         bool isStalemate;
 
-        // Scores of player 1 and player 2
-        int score1;
-        int score2;
+        // Scores of white and black
+        double score_white;
+        double score_black;
         
         bool enteredSetupMode;
         bool isInGame;
