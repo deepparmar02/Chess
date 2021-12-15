@@ -15,6 +15,8 @@ class Move {
         // Overloaded constructor for pawn promotion moves
         Move(char start_file, int start_rank, char end_file, int end_rank, char promote_to);
 
+        Move();
+
         ~Move();
 };
 

@@ -29,8 +29,12 @@ class Board : public Subject {
         // emptyBoard goes back to a clean, empty board
         void emptyBoard();
 
+        // Note: for arguments taking file and rank,
+        // If 'a' <= file <= 'h' or 1 <= rank <= 8, a std::out_of_range 
+        // is thrown. This applies to getPieceAt, operator(), setPieceAt,
+        // add_piece, delete_piece, and isPieceSafe
+
         /* Getters and Setters, sort of */
-        // If 'a' <= file <= 'h' or 1 <= rank <= 8, a std::out_of_range is thrown.
         Piece *getPieceAt(char file, int rank) const;
         // cleaner client alternative to getPieceAt
         Piece *operator() (char file, int rank) const;
@@ -119,12 +123,6 @@ class Board : public Subject {
         // getScore returns the final scores of white and black
         double getScoreWhite();
         double getScoreBlack();
-
-        // winner returns the colour of the winner
-        // Piece::PieceColour winner();
-
-        // TEMPORARY OUTPUT OPERATOR
-        friend std::ostream &operator<<(std::ostream& out, const Board &board);
 
         // current_turn gives the turn of current player
         Piece::PieceColour current_turn();
