@@ -816,7 +816,23 @@ void Board::setGameRunning(){
 }
 
 bool Board::endSetupMode() {
-    if (!isPawnLastRow() && isTwoKings() && !inCheck()) {
+    // NOTE TO DEEP AND VANSH: I checked in the specification
+    // that neither king is in check, and endSetupMode doesn't
+    // do that. Therefore, I fixed this part.
+
+    // temporary variable to store current player turn
+    Piece::PieceColour cur_player = whose_turn;
+
+    // checks if white king is in check
+    whose_turn = Piece::PieceColour::White;
+    bool white_check = inCheck();
+
+    // checks if black king is in check
+    whose_turn = Piece::PieceColour::Black;
+    bool black_check = inCheck();
+
+    whose_turn = cur_player; // set back to normal
+    if (!isPawnLastRow() && isTwoKings() && !white_check && !black_check) {
         isGameOver();
         return true;
     }

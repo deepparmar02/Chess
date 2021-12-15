@@ -40,6 +40,9 @@ Move Human::make_move() {
         cols.push_back(col);
         rows.push_back(row);
     }
+    if (cols.size() != 2 || rows.size() != 2) {
+        throw NoMove{"Invalid number of arguments"};
+    }
     if (i < 3) {
         newPiece = ' ';
     }

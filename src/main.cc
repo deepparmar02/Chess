@@ -35,6 +35,9 @@ int main() {
     std::vector<std::unique_ptr<Player>> players(2);
     int turn = 0; // 0 = white, 1 = black
     string command;
+
+    std::string outside_board_err{"Square out of bounds. Try again."};
+
     while (cin >> command) {
         if (command == "game") {
             // string whitePlayer, blackPlayer;
@@ -89,9 +92,24 @@ int main() {
             }
 
             // Human handles input. Computer doesn't need to.
-            Move move_made = players[turn]->make_move();
-            // if promote move
-            bool valid_move = board.move(move_made);
+            // Exception handling for make_move.
+            Move move_made;
+            try {
+                move_made = players[turn]->make_move();
+            } catch (NoMove &nomove) {
+                cout << "No move detected. Try again." << endl;
+                cout << nomove.message << endl;
+                continue;
+            }
+            // Exception handling for move
+            bool valid_move;
+            try {
+                valid_move = board.move(move_made);
+            } catch (std::out_of_range &outside) {
+                cout << outside_board_err << endl;
+                cout << outside.what() << endl;
+                continue;
+            }
 
             board.notifyObservers();
             if (valid_move) {
@@ -133,8 +151,13 @@ int main() {
                     char piece, col;
                     int row;
                     cin >> piece >> col >> row;
-
-                    board.addPiece(col, row, piece);
+                    
+                    try {
+                        board.addPiece(col, row, piece);
+                    } catch (std::out_of_range &outside) {
+                        cout << outside_board_err << endl;
+                        cout << outside.what() << endl;
+                    }
                     board.notifyObservers();
                 }
                 else if (setupCmd == "-") {
@@ -142,7 +165,12 @@ int main() {
                     int row;
                     cin >> col >> row;
 
-                    board.deletePiece(col, row);
+                    try {
+                        board.deletePiece(col, row);
+                    } catch (std::out_of_range &outside) {
+                        cout << outside_board_err << endl;
+                        cout << outside.what() << endl;
+                    }
                     board.notifyObservers();
                 }
                 else if (setupCmd == "=") {
@@ -176,6 +204,6 @@ int main() {
     }
 
     cout << "Final Score:" << endl;
-    cout << "White: " << board.getScore1()<< endl;
+    cout << "White: " << board.getScore1() << endl;
     cout << "Black: " << board.getScore2() << endl;
 }
