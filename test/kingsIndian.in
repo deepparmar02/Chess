@@ -1,4 +1,5 @@
-game white black
+n
+game human human
 move e2 e4
 move g8 f6
 move g1 f3

@@ -1,4 +1,5 @@
-game h 2
+n
+game human computer2
 move e2 e4
 move
 move e1 e2
