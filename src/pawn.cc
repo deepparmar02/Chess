@@ -2,7 +2,6 @@
 #include "board.h"
 #include "move.h"
 #include <vector>
-#include <iostream>
 using namespace std;
 
 Pawn::Pawn(Piece::PieceColour colour): Piece{colour} {}

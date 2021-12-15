@@ -28,7 +28,6 @@ GraphicDisplay::GraphicDisplay(Board *board_subject) :
             int rank = 8 - j;
             char file = 'a' + i;
             drawPieceAt(file, rank);
-            // screen.drawString(i * SQUARE_SIZE + SQUARE_SIZE / 2, j * SQUARE_SIZE + SQUARE_SIZE / 2, std::string(1, pieceLetter));
         }
     }
 }
@@ -40,9 +39,6 @@ int convert(Piece::PieceColour colour) {
         return Xwindow::Black;
     }
 }
-
-// Right now, there is a lot of copied code. I will deal with it later.
-// For now, this is a proof of concept.
 
 void GraphicDisplay::drawRook(int x, int y, int colour) {
     screen.fillRectangle(x + SQUARE_SIZE / 10, y + SQUARE_SIZE / 10, SQUARE_SIZE / 5, SQUARE_SIZE * 2 / 5, colour);
@@ -127,5 +123,4 @@ void GraphicDisplay::drawPieceAt(char file, int rank) {
 
 GraphicDisplay::~GraphicDisplay() {
     board_subject->detach(this);
-    // as for screen, no need to delete.
 }

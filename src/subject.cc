@@ -11,8 +11,8 @@ void Subject::attach( Observer *o ) {
 void Subject::detach( Observer *o ) {
     for ( auto it = observers.begin(); it != observers.end(); ++it ) {
         if ( *it == o ) {
-        observers.erase(it);
-        break;
+            observers.erase(it);
+            break;
         }
     }
 }

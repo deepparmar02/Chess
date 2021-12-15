@@ -46,11 +46,13 @@ std::unique_ptr<Piece> Rook::make_copy() const {
 
 std::vector<Move> Rook::valid_direction_moves(char file, int rank) const {
     std::vector<Move> directional_moves;
+    // Checks horizontally
     for (char i = 'a'; i <= 'h'; i++) {
         if (i != file) {
             directional_moves.emplace_back(file, rank, i, rank);
         }
     }
+    // Checks vertically
     for (int i = 1; i <= 8; i++) {
         if (i != rank) {
             directional_moves.emplace_back(file, rank, file, i);

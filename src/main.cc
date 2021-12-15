@@ -7,7 +7,6 @@
 #include "textdisplay.h"
 #include "graphicdisplay.h"
 #include "fancyTextDisplay.h"
-
 #include "player.h"
 #include "human.h"
 #include "levelOne.h"
@@ -40,8 +39,6 @@ int main() {
 
     while (cin >> command) {
         if (command == "game") {
-            // string whitePlayer, blackPlayer;
-            // cin >> whitePlayer >> blackPlayer;
             bool isValidPlayer = true;
 
             for (int i = 0; i <= 1; i++) {
@@ -56,7 +53,7 @@ int main() {
                 } else if (player == "human"){
                     players[i] = std::make_unique<Human>(board);
                 } else {
-                    cout << "Invalid Command - Must be either human or computer[1-4]" << endl;
+                    cout << "Invalid Command - Must be either human or computer[1-3]" << endl;
                     isValidPlayer = false;
                     break;
                 }
@@ -121,10 +118,10 @@ int main() {
                     } else {
                         cout << "White";
                     }
-                    cout << " wins" << endl;
+                    cout << " wins!" << endl;
                 }
                 else if (board.inStalemate()) {
-                    cout << "Stalemate" << endl;
+                    cout << "Stalemate!" << endl;
                 }
                 else if (board.inCheck()) {
                     if (board.current_turn() == Piece::PieceColour::White) {

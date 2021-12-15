@@ -1,16 +1,6 @@
 #include "fancyTextDisplay.h"
-#include <iostream>
 #include "board.h"
-#include "piece.h" // for now.
-// just in case 
-#include "empty.h"
-#include "pawn.h"
-#include "knight.h"
-#include "bishop.h"
-#include "rook.h"
-#include "queen.h"
-#include "king.h"
-// end of just in case
+#include <iostream>
 using namespace std;
 
 FancyTextDisplay::FancyTextDisplay(Board *board_subject) : board_subject{board_subject} {
@@ -75,6 +65,7 @@ void FancyTextDisplay::notify() {
 
     std::cout << endl;
     std::cout << "  a b c d e f g h" << endl;
+    std::cout << endl;
 }
 
 FancyTextDisplay::~FancyTextDisplay() {

@@ -5,4 +5,8 @@ setup
 + Q h7
 = white
 done
-game human human
+- h7
++ q h1
+done
+- h1
+done

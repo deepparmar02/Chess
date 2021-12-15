@@ -18,7 +18,8 @@ bool Bishop::isValidMove(int startRow, char startCol, int endRow, char endCol, B
     if(board.getPieceAt(endCol, endRow)->getColour() == colour){
         return false;
     }
-    if(endCol - startCol == endRow - startRow || endCol - startCol == startRow - endRow){ // Checks if there is a piece between startRow, startCol and endRow, endCol (diagonally)
+    // Checks if there is a piece between startRow, startCol and endRow, endCol (diagonally)
+    if(endCol - startCol == endRow - startRow || endCol - startCol == startRow - endRow){ 
         int rowDir = (endRow - startRow > 0) ? 1 : -1;
         char colDir = (endCol - startCol > 0) ? 1 : -1;
         char j = startCol + colDir;
@@ -47,21 +48,5 @@ std::vector<Move> Bishop::valid_direction_moves(char file, int rank) const {
             }
         }
     }
-    // // NE direction
-    // for (int i = 1; inBounds(file + i, rank + i) ; ++i) {
-    //     directional_moves.emplace_back(file, rank, file + i, rank + i);
-    // }
-    // // SE direction
-    // for (int j = 1; inBounds(file + i, rank + i) ; ++j) {
-    //     directional_moves.emplace_back(file, rank, file + j, rank - j);
-    // }
-    // // SW direction
-    // for (int k = 1; inBounds(file + i, rank + i) ; ++k) {
-    //     directional_moves.emplace_back(file, rank, file - k, rank - k);
-    // }
-    // // NW direction
-    // for (int l = 1; inBounds(file + i, rank + i) ; ++l) {
-    //     directional_moves.emplace_back(file, rank, file - l, rank + l);
-    // }
     return directional_moves;
 }

@@ -6,6 +6,7 @@ class Board;
 class TextDisplay : public Observer {
     public:
         explicit TextDisplay(Board *board_subject);
+        // Outputs the chess board, with pieces as letters, on std out.
         void notify() override;
         ~TextDisplay();
     private:

@@ -9,12 +9,13 @@ class Board;
 class GraphicDisplay : public Observer {
     public:
         explicit GraphicDisplay(Board *board_subject);
+        // Displays the chessboard on an XWindow.
         void notify() override;
         ~GraphicDisplay();
     private:
         Board *board_subject;
-        // what else to add? maybe XWindow maybe?
         Xwindow screen;
+
         void drawRook(int x, int y, int colour);
         void drawPawn(int x, int y, int colour);
         void drawBishop(int x, int y, int colour);

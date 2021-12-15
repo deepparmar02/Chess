@@ -50,14 +50,15 @@ bool King::isValidMove(int startRow, char startCol, int endRow, char endCol, Boa
 
         // if you're playing white and in rank 1
         if (startRow == castleRank) {
-            // castling kingside
             if (2 == changeCol && kingside) {
+                // castling kingside
                 bool empty = board('f',castleRank)->getType() == Empty && 
                              board('g',castleRank)->getType() == Empty &&
                              board('h',castleRank)->getType() == Rook &&
                              board('h',castleRank)->getColour() == colour;
                 return empty;
             } else if (-2 == changeCol && queenside) {
+                // castling queenside
                 bool empty = board('d',castleRank)->getType() == Empty && 
                              board('c',castleRank)->getType() == Empty && 
                              board('b',castleRank)->getType() == Empty;

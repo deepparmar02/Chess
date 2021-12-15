@@ -2,7 +2,6 @@
 #include "board.h"
 #include "levelTwo.h"
 #include <random>
-#include <iostream>
 
 LevelTwo::LevelTwo(Board &board) : Player{board} {}
 

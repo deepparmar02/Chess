@@ -13,3 +13,5 @@ computerCheck
 level_two_many_moves_test
 block_check
 setup_check
+test_level_1
+test_level_3

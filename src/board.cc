@@ -85,12 +85,9 @@ std::unique_ptr<Piece> convertToPiece(char piece){
     return std::make_unique<Empty>();
 }
 
-// cleaner alternative to getPieceAt
 Piece *Board::operator() (char col, int row) const {
     return getPieceAt(col, row);
 }
-
-// TODO: Add the castling fields to ctors and assignment methods
 
 // The internal board setup is that white pieces are on the left, black on the right.
 // a1 is [0][0], etc. up tp h8 which is [7][7]
@@ -171,13 +168,13 @@ void Board::defaultSetup() {
             colour = Piece::PieceColour::Black;
         }
         setPieceAt('a', i, std::make_unique<Rook>(colour));
-	setPieceAt('b', i, std::make_unique<Knight>(colour));
-	setPieceAt('c', i, std::make_unique<Bishop>(colour));
-	setPieceAt('d', i, std::make_unique<Queen>(colour));
-	setPieceAt('e', i, std::make_unique<King>(colour));
-	setPieceAt('f', i, std::make_unique<Bishop>(colour));
-	setPieceAt('g', i, std::make_unique<Knight>(colour));
-	setPieceAt('h', i, std::make_unique<Rook>(colour));
+        setPieceAt('b', i, std::make_unique<Knight>(colour));
+        setPieceAt('c', i, std::make_unique<Bishop>(colour));
+        setPieceAt('d', i, std::make_unique<Queen>(colour));
+        setPieceAt('e', i, std::make_unique<King>(colour));
+        setPieceAt('f', i, std::make_unique<Bishop>(colour));
+        setPieceAt('g', i, std::make_unique<Knight>(colour));
+        setPieceAt('h', i, std::make_unique<Rook>(colour));
     }
     enteredSetupMode = false;
     isGameOver();
@@ -232,9 +229,6 @@ Board & Board::operator=(const Board &other) {
     }
     return *this;
 }
-
-// I'm just experimenting with the default move ctor and operator= 
-// just to see if it works or not. Don't delete the commented code for now.
 
 Board::Board(Board &&other) : 
     whose_turn{std::move(other.whose_turn)},
@@ -305,16 +299,14 @@ void Board::setPieceAt(char file, int rank, std::unique_ptr<Piece> piece) {
 }
 
 bool Board::inCheck() {
-    // This implemenation feels very "code by interface". For every square,
-    // I just find if the King can be captured by any piece on the board.
-    // If yes, it's check. This can be a bit inefficient, because I check
-    // every square, but isValidMove does some polymorphismy-encapsulationy
-    // dark magic: it just checks if at that place, it can capture. I don't
+    // We just find if the King can be captured by any piece on the board.
+    // If yes, it's check. isValidMove does some polymorphismy-encapsulationy
+    // dark magic: it just checks if at that place, it can capture. We don't
     // have to worry about the specific ways a piece can capture the king.
     char king_file;
     int king_rank;
 
-    // here, we find where the king is. Inefficient but certain
+    // here, we find where the king is.
     for (char f = 'a'; f <= 'h'; ++f) {
         for (int r = 1; r <= 8; ++r) {
             auto piece = getPieceAt(f, r);
@@ -328,22 +320,11 @@ bool Board::inCheck() {
         }
     }
 
+    // if a king is not safe, it is in check.
+    // if a king is safe, it is not in check.
     return !isPieceSafe(king_file, king_rank);
-
-    // we loop through every square to see if there's a piece that is in sight of
-    // capturing the king.
-    // for (char f = 'a'; f <= 'h'; ++f) {
-    //     for (int r = 1; r <= 8; ++r) {
-    //         // if a piece can move and capture the king
-    //         if (getPieceAt(f, r)->isValidMove(r, f, king_rank, king_file, *this)) {
-    //             return true;
-    //         }
-    //     }
-    // }
-    // return false;
 }
 
-// reset en_passant_every time you start your move
 void Board::resetEnPassant() {
     en_passant_file = '\0';
     en_passant_rank = 0;
@@ -567,8 +548,6 @@ bool Board::valid_move(char start_file, int start_rank, char end_file, int end_r
         // YOU DO NOT CHANGE THEM.
 
         if (no_check && modify_board) {
-            // ONLY MAKE CHANGES TO THE BOARD HERE.
-            
             changedBoxes.emplace_back(start_file, start_rank);
             changedBoxes.emplace_back(end_file, end_rank);
             
@@ -630,7 +609,6 @@ bool Board::move(char start_file, int start_rank, char end_file, int end_rank) {
     return valid_move(start_file, start_rank, end_file, end_rank, true);
 }
 
-// TODO: Reimplement the overloaded move functions with respect to pawn promotion.
 bool Board::move(Move &given_move) {
     char start_file = given_move.start_file;
     int start_rank = given_move.start_rank;
@@ -643,8 +621,10 @@ bool Board::move(Move &given_move) {
     return move(start_file, start_rank, end_file, end_rank, convertToPiece(promote_to).get());
 }
 
-
 bool Board::possibleMoveExists() {
+    // we clear the vectors because the board could have changed and 
+    // valid possible moves could have changed as well.
+    // Each move changes the possible moves available.
     allPossibleMoves.clear();
     capturingMoves.clear();
     checkMoves.clear();
@@ -657,6 +637,8 @@ bool Board::possibleMoveExists() {
             for (auto move : directional_moves) {
                 bool valid = true;
                 std::unique_ptr<Piece> promote_piece;
+                
+                // here, we determine if pawn promotion is involved. If yes, we pass in differently.
                 if (move.promote_to != ' ')  {
                     promote_piece = convertToPiece(move.promote_to);
                     valid = valid_move(move.start_file, move.start_rank, move.end_file, move.end_rank, promote_piece.get(), false);
@@ -665,19 +647,25 @@ bool Board::possibleMoveExists() {
                 }
     
                 if (valid) {
-                    // TODO: Does not check if pawn promotion is legal or not, so work on it.
 
                     Piece::PieceColour opponent = whose_turn == White ? Black : White;
                     
-                    allPossibleMoves.push_back(move);
+                    allPossibleMoves.push_back(move); // add the valid move to vector
+                    
+                    // if the move is a capturing move (there is a piece at the end location),
+                    // the add it capturingMoves vector
                     if (getPieceAt(move.end_file, move.end_rank)->getType() != typeEmpty) {
                         capturingMoves.push_back(move);
                     }  
+
+                    // if move creates check, add to checKMoves vector
                     if (move_check(move.start_file, move.start_rank, move.end_file, move.end_rank, false, opponent)) {
                         checkMoves.push_back(move);
                     }  
 
+                    // check if piece is safe at current location from opponent pieces
                     if (!isPieceSafe(i, j)) {
+                        // if not safe, move to safe location and add to vector
                         if (move_safe(move.start_file, move.start_rank, move.end_file, move.end_rank)) {
                             avoidCapturingMoves.push_back(move);
                         }
@@ -685,17 +673,6 @@ bool Board::possibleMoveExists() {
                 }
                 
             }
-            // if(piece->getType() != Piece::PieceType::Empty){
-            //     if(piece->getColour() == whose_turn){
-            //         for(char k = 'a'; k <= 'h'; k++){
-            //             for(int l = 1; l <= 8; l++){
-            //                 if (valid_move(i, j, k, l, false)) {
-                                               
-            //                 }
-            //             }
-            //         }
-            //     }
-            // }
         }
     }
     return !allPossibleMoves.empty();
@@ -703,7 +680,7 @@ bool Board::possibleMoveExists() {
 
 bool Board::isPieceSafe(char file, int rank) {
     // we loop through every square to see if there's a piece that is in sight of
-    // capturing the king.
+    // capturing the piece at that location.
     for (char f = 'a'; f <= 'h'; ++f) {
         for (int r = 1; r <= 8; ++r) {
             // if a piece can move and capture the piece
@@ -843,16 +820,19 @@ bool Board::endSetupMode() {
     // temporary variable to store current player turn
     Piece::PieceColour cur_player = whose_turn;
 
-    // checks if white king is in check
-    whose_turn = Piece::PieceColour::White;
-    bool white_check = inCheck();
-
-    // checks if black king is in check
-    whose_turn = Piece::PieceColour::Black;
-    bool black_check = inCheck();
-
     whose_turn = cur_player; // set back to normal
-    if (!isPawnLastRow() && isTwoKings() && !white_check && !black_check) {
+    if (!isPawnLastRow() && isTwoKings()) {
+        // checks if white king is in check
+        whose_turn = Piece::PieceColour::White;
+        bool white_check = inCheck();
+
+        // checks if black king is in check
+        whose_turn = Piece::PieceColour::Black;
+        bool black_check = inCheck();
+
+        if (white_check || black_check) {
+            return false;
+        } 
         isGameOver();
         return true;
     }
