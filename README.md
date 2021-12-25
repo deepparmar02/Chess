@@ -4,4 +4,4 @@ This is a Chess game created using C++ during November and December 2021. It was
 ## Documentation
 - The final project guidelines for CS 246 that were followed are [here](docs/project_guidelines.pdf).
 - The project guidelines specifically for Chess and instructions on how to play the game are [here](docs/chess.pdf).
-- A UML Class Diagram representing our software design for this Chess game can be found [here](docs/uml_final.pdf).
+- A UML Class Diagram representing our software design for this Chess game can be found [here](docs/uml-final.pdf).
