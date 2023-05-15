@@ -33,3 +33,8 @@
 
 # Chess executable
 chess
+
+# Code Folders
+src
+submission
+test
