@@ -35,6 +35,6 @@
 chess
 
 # Code Folders
-src
-submission
-test
+src/
+submission/
+test/
